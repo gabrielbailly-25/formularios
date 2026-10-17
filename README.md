@@ -21,19 +21,22 @@ A eso el admin añade las preguntas que quiera: texto corto, texto largo, númer
 
 La app usa **Firebase Firestore** si está configurado (mismo sistema que Studio sistema). Sin configuración, funciona en **modo local** (los datos quedan guardados en el navegador donde se crean) para probar.
 
-Para activar el guardado compartido (familias desde distintos móviles + admin):
+Para activar el guardado compartido (familias desde distintos móviles + admin) con el proyecto `formularios` (cuenta gabriel.bailly@gmail.com):
 
-1. En Firebase Console → tu proyecto (p. ej. `glera-estudio-dirigido`) → Configuración → Tus apps → App web → copia `firebaseConfig`.
-2. En Vercel → proyecto → Settings → Environment Variables, añade:
+1. En Firebase Console (con la cuenta gabriel.bailly@gmail.com) → proyecto `formularios` → **Compilación → Firestore Database → Crear base de datos** → Modo de producción → ubicación `eur3 (europe-west)` → Crear. Las colecciones `glera_forms` y `glera_responses` se crean solas al guardar el primer formulario; no hace falta crearlas a mano.
+2. En el mismo proyecto → **Firestore Database → Reglas** → pega el contenido de `firestore.rules` de este repo → **Publicar**.
+3. En el mismo proyecto → **Configuración del proyecto → Tus apps → App web** (si no hay, añade una) → copia `firebaseConfig`.
+4. En Vercel → proyecto → Settings → Environment Variables, añade:
    - `NEXT_PUBLIC_FIREBASE_API_KEY`
    - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID` (= `formularios`)
    - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
    - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
    - `NEXT_PUBLIC_FIREBASE_APP_ID`
    - `NEXT_PUBLIC_ADMIN_PASSWORD` (contraseña del admin, por defecto `glera2026` si no se pone)
-3. En Firestore → Reglas, publica unas reglas que permitan leer/escribir las colecciones `glera_forms` y `glera_responses` (en modo prueba al principio, luego endurecer).
-4. Redeploy en Vercel.
+5. Redeploy en Vercel.
+
+Alternativa por terminal (desde esta carpeta, con tu sesión de Firebase): `firebase deploy --only firestore:rules,firestore:indexes` — usa `firebase.json` y `.firebaserc` de este repo, que ya apuntan al proyecto `formularios`.
 
 Sin Firebase, la app avisa arriba con “Modo local”.
 
