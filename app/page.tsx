@@ -4,6 +4,7 @@ import { GleraForm, Question, QuestionType, uid } from '../lib/types';
 import { listForms, saveForm, deleteForm, listResponses } from '../lib/store';
 import { isFirebaseConfigured, adminPassword } from '../lib/firebase';
 import RichTextEditor from '../components/RichTextEditor';
+import { GLERA_LOGO } from '../lib/logo';
 
 const QUESTION_TYPES: { value: QuestionType; label: string }[] = [
   { value: 'text', label: 'Texto corto' },
@@ -140,7 +141,7 @@ export default function AdminPage() {
     return `${window.location.origin}/f/${id}`;
   }
   function waLink(f: GleraForm) {
-    const text = `👋 *${f.title}*\n${f.planDate ? `📅 ${f.planDate}\n` : ''}${f.planPlace ? `📍 ${f.planPlace}\n` : ''}\nRellena el formulario para apuntar a tu hijo/a:\n${publicUrl(f.id)}`;
+    const text = `👋 *${f.title}*\n${f.planDate ? `📅 ${f.planDate}\n` : ''}${f.planPlace ? `📍 ${f.planPlace}\n` : ''}\nRellena el formulario para apuntar a tu hijo:\n${publicUrl(f.id)}`;
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
   }
   function copyLink(id: string) {
@@ -151,7 +152,7 @@ export default function AdminPage() {
     return (
       <main style={{ maxWidth: 480, margin: '60px auto', padding: 20 }}>
         <div className="card" style={{ padding: 28, textAlign: 'center' }}>
-          <div style={{ fontSize: 44 }}>🌿</div>
+          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 56, width: 'auto' }} />
           <h1 style={{ margin: '8px 0 4px' }}>Glera · Admin</h1>
           <p style={{ color: '#64748b', marginTop: 0 }}>Formularios de planes de fin de semana.<br />Solo el administrador puede entrar aquí.</p>
           <form onSubmit={login} style={{ display: 'grid', gap: 12, marginTop: 18 }}>
@@ -252,10 +253,13 @@ export default function AdminPage() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: 20 }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ margin: '0 0 4px', fontSize: 28 }}>🌿 Glera · Formularios</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 48, width: 'auto' }} />
+          <div>
+            <h1 style={{ margin: '0 0 4px', fontSize: 28 }}>Glera · Formularios</h1>
           <p style={{ color: '#64748b', margin: 0 }}>Planes de fin de semana — crea, comparte por WhatsApp y ve quién se apunta.</p>
           <p style={{ fontSize: 13, margin: '8px 0 0' }}>{isFirebaseConfigured() ? '● Guardado compartido (Firestore)' : '● Modo local — añade Firebase en Vercel para compartir datos entre móviles'}</p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-primary" onClick={() => setEditing(emptyForm())}>+ Nuevo formulario</button>

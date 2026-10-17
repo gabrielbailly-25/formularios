@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { GleraForm, GleraResponse } from '../../../lib/types';
 import { getForm, listResponses, deleteResponse, deleteForm } from '../../../lib/store';
 import { adminPassword } from '../../../lib/firebase';
+import { GLERA_LOGO } from '../../../lib/logo';
 
 function csvEscape(v: any): string {
   const s = String(v ?? '');
@@ -81,6 +82,7 @@ export default function AdminDetail() {
     return (
       <main style={{ maxWidth: 440, margin: '60px auto', padding: 20 }}>
         <div className="card" style={{ padding: 28, textAlign: 'center' }}>
+          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 56, width: 'auto', marginBottom: 8 }} />
           <h1>Admin · Glera</h1>
           <form onSubmit={e => { e.preventDefault(); if (pass === adminPassword()) { sessionStorage.setItem('glera_admin_auth', '1'); setAuthed(true); } else alert('Contraseña incorrecta'); }} style={{ display: 'grid', gap: 12 }}>
             <input className="field" type="password" placeholder="Contraseña del admin" value={pass} onChange={e => setPass(e.target.value)} autoFocus />
@@ -124,7 +126,7 @@ export default function AdminDetail() {
           <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 16, overflow: 'hidden' }}>
             <thead>
               <tr style={{ background: '#f8fafc', textAlign: 'left' }}>
-                <th style={{ padding: 12 }}>Hijo/a</th>
+                <th style={{ padding: 12 }}>Hijo</th>
                 <th style={{ padding: 12 }}>Se apunta</th>
                 <th style={{ padding: 12 }}>Observaciones</th>
                 {form.questions.map(q => <th key={q.id} style={{ padding: 12 }}>{q.label}</th>)}

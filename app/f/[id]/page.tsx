@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { GleraForm, uid } from '../../../lib/types';
 import { getForm, saveResponse, getSavedChild, saveChild } from '../../../lib/store';
+import { GLERA_LOGO } from '../../../lib/logo';
 
 export default function PublicForm() {
   const params = useParams();
@@ -35,8 +36,8 @@ export default function PublicForm() {
     e.preventDefault();
     setError('');
     if (!form) return;
-    if (!childName.trim()) { setError('Escribe el nombre de tu hijo/a.'); return; }
-    if (!childSurname.trim()) { setError('Escribe los apellidos de tu hijo/a.'); return; }
+    if (!childName.trim()) { setError('Escribe el nombre de tu hijo.'); return; }
+    if (!childSurname.trim()) { setError('Escribe los apellidos de tu hijo.'); return; }
     if (!attends) { setError('Elige si se apunta o no.'); return; }
     for (const q of form.questions) {
       if (q.required) {
@@ -87,7 +88,7 @@ export default function PublicForm() {
         <div className="card" style={{ padding: 32, textAlign: 'center' }}>
           <div style={{ fontSize: 52 }}>✅</div>
           <h1 style={{ margin: '10px 0 6px' }}>¡Gracias, {childName}!</h1>
-          <p style={{ color: '#64748b' }}>{attends === 'si' ? 'Queda apuntado/a al plan. ¡Nos vemos allí! 🎉' : 'Queda anotado que no se apunta a este plan.'}</p>
+          <p style={{ color: '#64748b' }}>{attends === 'si' ? 'Queda apuntado al plan. ¡Nos vemos allí! 🎉' : 'Queda anotado que no se apunta a este plan.'}</p>
           <p style={{ fontSize: 14, color: '#94a3b8' }}>Tu nombre queda guardado en este móvil para que no tengas que escribirlo en los próximos formularios.</p>
           <button className="btn btn-ghost" onClick={() => { setSent(false); setObservation(''); setAnswers({}); setAttends(''); }}>Rellenar otra respuesta</button>
         </div>
@@ -110,8 +111,8 @@ export default function PublicForm() {
   return (
     <main style={{ maxWidth: 620, margin: '0 auto', padding: 16, paddingBottom: 40 }}>
       {form.headerImage && <img src={form.headerImage} alt="" style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 16 }} />}
-      <div className="card" style={{ padding: 22, marginTop: 14 }}>
-        <div style={{ fontSize: 13, color: '#0d9488', fontWeight: 800, letterSpacing: 1 }}>ASOCIACIÓN JUVENIL GLERA</div>
+      <div className="card" style={{ padding: 22, marginTop: 14, textAlign: 'center' }}>
+        <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 56, width: 'auto', marginBottom: 4 }} />
         <h1 style={{ margin: '6px 0 4px', fontSize: 26, lineHeight: 1.2 }}>{form.title}</h1>
         {(form.planDate || form.planPlace) && <p style={{ color: '#64748b', margin: '0 0 12px' }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>}
         {form.descriptionHtml && <div dangerouslySetInnerHTML={{ __html: form.descriptionHtml }} style={{ fontSize: 16, lineHeight: 1.6 }} />}
@@ -119,11 +120,11 @@ export default function PublicForm() {
 
       <form onSubmit={handleSubmit} className="card" style={{ padding: 22, marginTop: 14, display: 'grid', gap: 16 }}>
         <div>
-          <label className="label">Nombre del hijo/a *</label>
-          <input className="field" value={childName} onChange={e => setChildName(e.target.value)} placeholder="Ej. Lucía" autoComplete="given-name" />
+          <label className="label">Nombre del hijo *</label>
+          <input className="field" value={childName} onChange={e => setChildName(e.target.value)} placeholder="Ej. Luis" autoComplete="given-name" />
         </div>
         <div>
-          <label className="label">Apellidos del hijo/a *</label>
+          <label className="label">Apellidos del hijo *</label>
           <input className="field" value={childSurname} onChange={e => setChildSurname(e.target.value)} placeholder="Ej. García Pérez" autoComplete="family-name" />
           {(childName || childSurname) && <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Se recordará en este móvil para próximos formularios. Puedes cambiarlo si lo necesitas.</p>}
         </div>
