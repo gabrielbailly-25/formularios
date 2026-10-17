@@ -1,0 +1,17 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f1f5f9; color: #0f172a; }
+a { color: #0d9488; }
+input, textarea, select { font: inherit; }
+.btn { border: 0; border-radius: 999px; padding: 11px 18px; font-weight: 700; cursor: pointer; font-size: 15px; }
+.btn-primary { background: #0d9488; color: #fff; }
+.btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+.btn-ghost { background: #fff; border: 1px solid #d1d5db; color: #0f172a; }
+.btn-danger { background: #fee2e2; color: #b91c1c; }
+.btn-wa { background: #25D366; color: #fff; }
+.card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+.field { width: 100%; border: 1px solid #d1d5db; border-radius: 12px; padding: 12px 14px; font-size: 16px; background: #fff; }
+.field:focus { outline: 2px solid #0d9488; border-color: #0d9488; }
+.label { font-weight: 700; font-size: 14px; margin-bottom: 6px; display: block; }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.badge-open { background: #ccfbf1; color: #0f766e; }
+.badge-closed { background: #fee2e2; color: #991b1b; }
