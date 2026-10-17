@@ -111,11 +111,20 @@ export default function PublicForm() {
   return (
     <main style={{ maxWidth: 620, margin: '0 auto', padding: 16, paddingBottom: 40 }}>
       {form.headerImage && <img src={form.headerImage} alt="" style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 16 }} />}
-      <div className="card" style={{ padding: 22, marginTop: 14, textAlign: 'center' }}>
-        <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 56, width: 'auto', marginBottom: 4 }} />
-        <h1 style={{ margin: '6px 0 4px', fontSize: 26, lineHeight: 1.2 }}>{form.title}</h1>
-        {(form.planDate || form.planPlace) && <p style={{ color: '#64748b', margin: '0 0 12px' }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>}
-        {form.descriptionHtml && <div dangerouslySetInnerHTML={{ __html: form.descriptionHtml }} style={{ fontSize: 16, lineHeight: 1.6 }} />}
+      <div className="card" style={{ padding: 22, marginTop: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left' }}>
+          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 52, width: 'auto', flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ margin: '0 0 4px', fontSize: 24, lineHeight: 1.2 }}>{form.title}</h1>
+            {(form.planDate || form.planPlace) && <p style={{ color: '#64748b', margin: 0 }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>}
+          </div>
+        </div>
+        {form.descriptionHtml && (
+          <>
+            <style>{`.plan-desc, .plan-desc * { text-align: left !important; } .plan-desc ul, .plan-desc ol { padding-left: 22px; margin: 8px 0; } .plan-desc li { margin: 4px 0; } .plan-desc p { margin: 8px 0; }`}</style>
+            <div className="plan-desc" dangerouslySetInnerHTML={{ __html: form.descriptionHtml }} style={{ fontSize: 16, lineHeight: 1.6, textAlign: 'left', marginTop: 14 }} />
+          </>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="card" style={{ padding: 22, marginTop: 14, display: 'grid', gap: 16 }}>

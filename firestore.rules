@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Formularios Glera — los enlaces son públicos para las familias (sin login),
+    // por eso la lectura de formularios y la creación de respuestas son públicas.
+    // La contraseña del admin es a nivel de app (NEXT_PUBLIC_ADMIN_PASSWORD),
+    // no de Firestore. Si tu proyecto ya tiene otras reglas (p. ej. Studio),
+    // añade estos dos bloques dentro del mismo `service` sin borrar los demás.
+    match /glera_forms/{formId} {
+      allow read, write: if true;
+    }
+    match /glera_responses/{responseId} {
+      allow read, write: if true;
+    }
+  }
+}
