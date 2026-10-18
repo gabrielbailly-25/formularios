@@ -221,7 +221,22 @@ export default function AdminPage() {
             <div>
               <label className="label">Autorización (opcional)</label>
               <textarea className="field" rows={3} value={editing.authText || ''} onChange={e => setEditing({ ...editing, authText: e.target.value })} placeholder="Ej. Autorizo a mi hijo a participar en la excursión al parque del Ebro el sábado 25 de octubre y a ser trasladado en autobús." />
-              <p style={{ fontSize: 13, color: '#64748b' }}>Si lo rellenas, la familia deberá marcar esta autorización para poder enviar el formulario. Déjalo vacío si el plan no necesita autorización.</p>
+              {editing.authText?.trim() && (
+                <div style={{ marginTop: 10 }}>
+                  <label className="label">Tipo de autorización</label>
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', border: '1px solid #e2e8f0', borderRadius: 12, padding: '11px 12px', cursor: 'pointer', background: (editing.authType || 'simple') === 'simple' ? '#f0fdfa' : '#fff' }}>
+                      <input type="radio" checked={(editing.authType || 'simple') === 'simple'} onChange={() => setEditing({ ...editing, authType: 'simple' })} style={{ marginTop: 3 }} />
+                      <span><strong>Sencilla</strong><br /><span style={{ fontSize: 13, color: '#64748b' }}>Solo casilla de aceptación. Para planes habituales de fin de semana.</span></span>
+                    </label>
+                    <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', border: '1px solid #e2e8f0', borderRadius: 12, padding: '11px 12px', cursor: 'pointer', background: editing.authType === 'full' ? '#f0fdfa' : '#fff' }}>
+                      <input type="radio" checked={editing.authType === 'full'} onChange={() => setEditing({ ...editing, authType: 'full' })} style={{ marginTop: 3 }} />
+                      <span><strong>Completa</strong><br /><span style={{ fontSize: 13, color: '#64748b' }}>Pide nombre y DNI del padre, madre o tutor que autoriza, más cláusula de protección de datos. Para autorizaciones más serias (excursiones, viajes).</span></span>
+                    </label>
+                  </div>
+                </div>
+              )}
+              <p style={{ fontSize: 13, color: '#64748b' }}>Si lo rellenas, la familia deberá aceptar esta autorización para poder enviar el formulario. Déjalo vacío si el plan no necesita autorización.</p>
             </div>
           </div>
 

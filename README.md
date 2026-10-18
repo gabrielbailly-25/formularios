@@ -15,7 +15,9 @@ App para crear formularios que se envían por WhatsApp a las familias de Glera, 
 3. Curso (desplegable: 4º EP → 2º Bach)
 4. ¿Se apunta al plan? (Sí / No)
 5. Observaciones (opcional)
-6. Autorización (solo si el admin escribe un texto de autorización en el formulario: la familia debe marcar la casilla para enviar)
+6. Autorización (solo si el admin escribe un texto de autorización en el formulario: la familia debe aceptarla para enviar). Dos tipos:
+   - **Sencilla**: solo casilla de aceptación. Para planes habituales.
+   - **Completa**: pide nombre y DNI del padre, madre o tutor que autoriza, más cláusula de protección de datos. Para autorizaciones más serias (excursiones, viajes). En el panel se ve quién autoriza y su DNI.
 
 A eso el admin añade las preguntas que quiera: texto corto, texto largo, número, Sí/No, una opción (radio), varias opciones (checkbox) o desplegable.
 

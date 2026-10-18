@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { GleraForm, uid, CURSOS } from '../../../lib/types';
+import { GleraForm, uid, CURSOS, DATA_CLAUSE } from '../../../lib/types';
 import { getForm, saveResponse, getSavedChild, saveChild, listResponses } from '../../../lib/store';
 import { GLERA_LOGO } from '../../../lib/logo';
 
@@ -16,6 +16,8 @@ export default function PublicForm() {
   const [curso, setCurso] = useState('');
   const [attends, setAttends] = useState<'si' | 'no' | ''>('');
   const [authorized, setAuthorized] = useState(false);
+  const [authByName, setAuthByName] = useState('');
+  const [authByDni, setAuthByDni] = useState('');
   const [observation, setObservation] = useState('');
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [sending, setSending] = useState(false);
@@ -31,6 +33,8 @@ export default function PublicForm() {
       setChildName(saved.name);
       setChildSurname(saved.surname);
       setCurso(saved.curso);
+      setAuthByName(saved.authName);
+      setAuthByDni(saved.authDni);
       setLoading(false);
     })();
   }, [id]);
@@ -43,7 +47,12 @@ export default function PublicForm() {
     if (!childSurname.trim()) { setError('Escribe los apellidos de tu hijo.'); return; }
     if (!curso) { setError('Elige el curso de tu hijo.'); return; }
     if (!attends) { setError('Elige si se apunta o no.'); return; }
-    if (form.authText && !authorized) { setError('Debes marcar la autorización para poder enviar el formulario.'); return; }
+    const isFullAuth = Boolean(form.authText) && (form.authType || 'simple') === 'full';
+    if (form.authText && !authorized) { setError('Debes aceptar la autorización para poder enviar el formulario.'); return; }
+    if (isFullAuth) {
+      if (!authByName.trim()) { setError('Escribe el nombre de quien autoriza (padre, madre o tutor).'); return; }
+      if (!authByDni.trim()) { setError('Escribe el DNI de quien autoriza.'); return; }
+    }
     for (const q of form.questions) {
       if (q.required) {
         const v = answers[q.id];
@@ -73,11 +82,13 @@ export default function PublicForm() {
         attends: attends as 'si' | 'no',
         observation: observation.trim(),
         authorized: form.authText ? authorized : undefined,
+        authByName: isFullAuth ? authByName.trim() : undefined,
+        authByDni: isFullAuth ? authByDni.trim() : undefined,
         answers,
         createdAt: Date.now(),
       });
       // Guarda el nombre para futuros formularios en este móvil
-      saveChild(childName, childSurname, curso);
+      saveChild(childName, childSurname, curso, authByName, authByDni);
       // Avisa al admin con push (título del plan + nombre del hijo); no bloquea
       try {
         fetch('/api/notify', {
@@ -231,12 +242,30 @@ export default function PublicForm() {
           <textarea className="field" rows={3} value={observation} onChange={e => setObservation(e.target.value)} placeholder="Alergias, algo que debamos saber, hora de recogida…" />
         </div>
 
-        {form.authText && (
+        {form.authText && (form.authType || 'simple') === 'full' ? (
+          <div style={{ display: 'grid', gap: 12, border: '1px solid #e2e8f0', borderRadius: 12, padding: 16, background: '#fff' }}>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>Autorización *</div>
+            <p style={{ margin: 0, fontSize: 15, lineHeight: 1.5 }}>{form.authText}</p>
+            <div>
+              <label className="label">Nombre y apellidos del padre, madre o tutor que autoriza *</label>
+              <input className="field" value={authByName} onChange={e => setAuthByName(e.target.value)} placeholder="Ej. María García López" autoComplete="name" />
+            </div>
+            <div>
+              <label className="label">DNI de quien autoriza *</label>
+              <input className="field" value={authByDni} onChange={e => setAuthByDni(e.target.value)} placeholder="Ej. 12345678A" autoComplete="off" style={{ maxWidth: 220 }} />
+            </div>
+            <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer', background: authorized ? '#f0fdfa' : '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: 12 }}>
+              <input type="checkbox" checked={authorized} onChange={e => setAuthorized(e.target.checked)} style={{ marginTop: 3, width: 18, height: 18, flexShrink: 0 }} />
+              <span style={{ fontSize: 14, lineHeight: 1.5 }}>He leído la autorización anterior y la acepto. *</span>
+            </label>
+            <p style={{ fontSize: 12, color: '#64748b', margin: 0, lineHeight: 1.5 }}>{DATA_CLAUSE}</p>
+          </div>
+        ) : form.authText ? (
           <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, cursor: 'pointer', background: authorized ? '#f0fdfa' : '#fff' }}>
             <input type="checkbox" checked={authorized} onChange={e => setAuthorized(e.target.checked)} style={{ marginTop: 4, width: 18, height: 18, flexShrink: 0 }} />
             <span style={{ fontSize: 15, lineHeight: 1.5 }}><strong>Autorización *</strong><br />{form.authText}</span>
           </label>
-        )}
+        ) : null}
 
         {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: 12, borderRadius: 12, fontSize: 14 }}>{error}</div>}
         <button className="btn btn-primary" type="submit" disabled={sending} style={{ fontSize: 17, padding: '14px 18px' }}>{sending ? 'Enviando…' : 'Enviar respuesta'}</button>

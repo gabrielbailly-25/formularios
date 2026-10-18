@@ -107,20 +107,20 @@ export async function deleteResponse(id: string): Promise<void> {
   writeLS(LS_RESP, readLS<GleraResponse>(LS_RESP).filter(r => r.id !== id));
 }
 
-// Memoria del hijo en el móvil de la familia (nombre, apellidos y curso)
+// Memoria del hijo y del autorizante en el móvil de la familia
 const LS_CHILD = 'glera_hijo_v1';
-export function getSavedChild(): { name: string; surname: string; curso: string } {
-  if (typeof window === 'undefined') return { name: '', surname: '', curso: '' };
+export function getSavedChild(): { name: string; surname: string; curso: string; authName: string; authDni: string } {
+  if (typeof window === 'undefined') return { name: '', surname: '', curso: '', authName: '', authDni: '' };
   try {
     const raw = localStorage.getItem(LS_CHILD);
-    if (!raw) return { name: '', surname: '', curso: '' };
+    if (!raw) return { name: '', surname: '', curso: '', authName: '', authDni: '' };
     const p = JSON.parse(raw);
-    return { name: p.name || '', surname: p.surname || '', curso: p.curso || '' };
+    return { name: p.name || '', surname: p.surname || '', curso: p.curso || '', authName: p.authName || '', authDni: p.authDni || '' };
   } catch {
-    return { name: '', surname: '', curso: '' };
+    return { name: '', surname: '', curso: '', authName: '', authDni: '' };
   }
 }
-export function saveChild(name: string, surname: string, curso: string) {
+export function saveChild(name: string, surname: string, curso: string, authName = '', authDni = '') {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(LS_CHILD, JSON.stringify({ name: name.trim(), surname: surname.trim(), curso: (curso || '').trim() }));
+  localStorage.setItem(LS_CHILD, JSON.stringify({ name: name.trim(), surname: surname.trim(), curso: (curso || '').trim(), authName: authName.trim(), authDni: authDni.trim() }));
 }
