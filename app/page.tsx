@@ -218,6 +218,11 @@ export default function AdminPage() {
               <RichTextEditor value={editing.descriptionHtml} onChange={html => setEditing({ ...editing, descriptionHtml: html })} />
               <p style={{ fontSize: 13, color: '#64748b' }}>Aquí va lo que verán las familias: día, hora, lugar, qué llevar, precio, etc. Puedes poner negrita, colores, listas y enlaces.</p>
             </div>
+            <div>
+              <label className="label">Autorización (opcional)</label>
+              <textarea className="field" rows={3} value={editing.authText || ''} onChange={e => setEditing({ ...editing, authText: e.target.value })} placeholder="Ej. Autorizo a mi hijo a participar en la excursión al parque del Ebro el sábado 25 de octubre y a ser trasladado en autobús." />
+              <p style={{ fontSize: 13, color: '#64748b' }}>Si lo rellenas, la familia deberá marcar esta autorización para poder enviar el formulario. Déjalo vacío si el plan no necesita autorización.</p>
+            </div>
           </div>
 
           <div className="card" style={{ padding: 20 }}>

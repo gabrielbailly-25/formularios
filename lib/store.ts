@@ -107,19 +107,20 @@ export async function deleteResponse(id: string): Promise<void> {
   writeLS(LS_RESP, readLS<GleraResponse>(LS_RESP).filter(r => r.id !== id));
 }
 
-// Memoria del nombre del hijo en el móvil de la familia
+// Memoria del hijo en el móvil de la familia (nombre, apellidos y curso)
 const LS_CHILD = 'glera_hijo_v1';
-export function getSavedChild(): { name: string; surname: string } {
-  if (typeof window === 'undefined') return { name: '', surname: '' };
+export function getSavedChild(): { name: string; surname: string; curso: string } {
+  if (typeof window === 'undefined') return { name: '', surname: '', curso: '' };
   try {
     const raw = localStorage.getItem(LS_CHILD);
-    if (!raw) return { name: '', surname: '' };
-    return JSON.parse(raw);
+    if (!raw) return { name: '', surname: '', curso: '' };
+    const p = JSON.parse(raw);
+    return { name: p.name || '', surname: p.surname || '', curso: p.curso || '' };
   } catch {
-    return { name: '', surname: '' };
+    return { name: '', surname: '', curso: '' };
   }
 }
-export function saveChild(name: string, surname: string) {
+export function saveChild(name: string, surname: string, curso: string) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(LS_CHILD, JSON.stringify({ name: name.trim(), surname: surname.trim() }));
+  localStorage.setItem(LS_CHILD, JSON.stringify({ name: name.trim(), surname: surname.trim(), curso: (curso || '').trim() }));
 }

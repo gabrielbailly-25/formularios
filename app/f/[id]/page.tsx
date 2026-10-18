@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { GleraForm, uid } from '../../../lib/types';
+import { GleraForm, uid, CURSOS } from '../../../lib/types';
 import { getForm, saveResponse, getSavedChild, saveChild, listResponses } from '../../../lib/store';
 import { GLERA_LOGO } from '../../../lib/logo';
 
@@ -13,7 +13,9 @@ export default function PublicForm() {
   const [notFound, setNotFound] = useState(false);
   const [childName, setChildName] = useState('');
   const [childSurname, setChildSurname] = useState('');
+  const [curso, setCurso] = useState('');
   const [attends, setAttends] = useState<'si' | 'no' | ''>('');
+  const [authorized, setAuthorized] = useState(false);
   const [observation, setObservation] = useState('');
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [sending, setSending] = useState(false);
@@ -28,6 +30,7 @@ export default function PublicForm() {
       const saved = getSavedChild();
       setChildName(saved.name);
       setChildSurname(saved.surname);
+      setCurso(saved.curso);
       setLoading(false);
     })();
   }, [id]);
@@ -38,7 +41,9 @@ export default function PublicForm() {
     if (!form) return;
     if (!childName.trim()) { setError('Escribe el nombre de tu hijo.'); return; }
     if (!childSurname.trim()) { setError('Escribe los apellidos de tu hijo.'); return; }
+    if (!curso) { setError('Elige el curso de tu hijo.'); return; }
     if (!attends) { setError('Elige si se apunta o no.'); return; }
+    if (form.authText && !authorized) { setError('Debes marcar la autorización para poder enviar el formulario.'); return; }
     for (const q of form.questions) {
       if (q.required) {
         const v = answers[q.id];
@@ -64,13 +69,15 @@ export default function PublicForm() {
         formId: form.id,
         childName: childName.trim(),
         childSurname: childSurname.trim(),
+        curso,
         attends: attends as 'si' | 'no',
         observation: observation.trim(),
+        authorized: form.authText ? authorized : undefined,
         answers,
         createdAt: Date.now(),
       });
       // Guarda el nombre para futuros formularios en este móvil
-      saveChild(childName, childSurname);
+      saveChild(childName, childSurname, curso);
       // Avisa al admin con push (título del plan + nombre del hijo); no bloquea
       try {
         fetch('/api/notify', {
@@ -113,7 +120,7 @@ export default function PublicForm() {
           <h1 style={{ margin: '10px 0 6px' }}>¡Gracias, {childName}!</h1>
           <p style={{ color: '#64748b' }}>{attends === 'si' ? 'Queda apuntado al plan. ¡Nos vemos allí! 🎉' : 'Queda anotado que no se apunta a este plan.'}</p>
           <p style={{ fontSize: 14, color: '#94a3b8' }}>Tu nombre queda guardado en este móvil para que no tengas que escribirlo en los próximos formularios.</p>
-          <button className="btn btn-ghost" onClick={() => { setSent(false); setObservation(''); setAnswers({}); setAttends(''); }}>Rellenar otra respuesta</button>
+          <button className="btn btn-ghost" onClick={() => { setSent(false); setObservation(''); setAnswers({}); setAttends(''); setAuthorized(false); }}>Rellenar otra respuesta</button>
         </div>
       </main>
     );
@@ -157,6 +164,13 @@ export default function PublicForm() {
           <label className="label">Apellidos del hijo *</label>
           <input className="field" value={childSurname} onChange={e => setChildSurname(e.target.value)} placeholder="Ej. García Pérez" autoComplete="family-name" />
           {(childName || childSurname) && <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Se recordará en este móvil para próximos formularios. Puedes cambiarlo si lo necesitas.</p>}
+        </div>
+        <div>
+          <label className="label">Curso *</label>
+          <select className="field" value={curso} onChange={e => setCurso(e.target.value)}>
+            <option value="">Elige el curso…</option>
+            {CURSOS.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
         </div>
 
         <div>
@@ -216,6 +230,13 @@ export default function PublicForm() {
           <label className="label">Observaciones</label>
           <textarea className="field" rows={3} value={observation} onChange={e => setObservation(e.target.value)} placeholder="Alergias, algo que debamos saber, hora de recogida…" />
         </div>
+
+        {form.authText && (
+          <label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', border: '1px solid #e2e8f0', borderRadius: 12, padding: 14, cursor: 'pointer', background: authorized ? '#f0fdfa' : '#fff' }}>
+            <input type="checkbox" checked={authorized} onChange={e => setAuthorized(e.target.checked)} style={{ marginTop: 4, width: 18, height: 18, flexShrink: 0 }} />
+            <span style={{ fontSize: 15, lineHeight: 1.5 }}><strong>Autorización *</strong><br />{form.authText}</span>
+          </label>
+        )}
 
         {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: 12, borderRadius: 12, fontSize: 14 }}>{error}</div>}
         <button className="btn btn-primary" type="submit" disabled={sending} style={{ fontSize: 17, padding: '14px 18px' }}>{sending ? 'Enviando…' : 'Enviar respuesta'}</button>

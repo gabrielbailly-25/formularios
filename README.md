@@ -12,8 +12,10 @@ App para crear formularios que se envían por WhatsApp a las familias de Glera, 
 
 1. Nombre del hijo
 2. Apellidos del hijo
-3. ¿Se apunta al plan? (Sí / No)
-4. Observaciones (opcional)
+3. Curso (desplegable: 4º EP → 2º Bach)
+4. ¿Se apunta al plan? (Sí / No)
+5. Observaciones (opcional)
+6. Autorización (solo si el admin escribe un texto de autorización en el formulario: la familia debe marcar la casilla para enviar)
 
 A eso el admin añade las preguntas que quiera: texto corto, texto largo, número, Sí/No, una opción (radio), varias opciones (checkbox) o desplegable.
 
