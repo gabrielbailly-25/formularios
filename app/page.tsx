@@ -40,6 +40,7 @@ export default function AdminPage() {
   const [editing, setEditing] = useState<GleraForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (sessionStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
@@ -47,14 +48,20 @@ export default function AdminPage() {
 
   async function refresh() {
     setLoading(true);
-    const list = await listForms();
-    setForms(list);
-    const c: Record<string, { total: number; si: number; no: number }> = {};
-    for (const f of list) {
-      const res = await listResponses(f.id);
-      c[f.id] = { total: res.length, si: res.filter(r => r.attends === 'si').length, no: res.filter(r => r.attends === 'no').length };
+    setLoadError('');
+    try {
+      const list = await listForms();
+      setForms(list);
+      const c: Record<string, { total: number; si: number; no: number }> = {};
+      for (const f of list) {
+        const res = await listResponses(f.id);
+        c[f.id] = { total: res.length, si: res.filter(r => r.attends === 'si').length, no: res.filter(r => r.attends === 'no').length };
+      }
+      setCounts(c);
+    } catch (e: any) {
+      console.error(e);
+      setLoadError('No se pudieron cargar los datos: ' + (e?.message || 'error de conexión') + '. Revisa las reglas y el índice de Firestore.');
     }
-    setCounts(c);
     setLoading(false);
   }
 
@@ -268,7 +275,9 @@ export default function AdminPage() {
         <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: '#0d9488' }}>{totalSi}</div><div style={{ color: '#64748b', fontSize: 14 }}>Apuntados en total</div></div>
       </div>
 
-      {loading ? <p>Cargando…</p> : forms.length === 0 ? (
+      {loading ? <p>Cargando…</p> : loadError ? (
+        <div className="card" style={{ padding: 20, background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>⚠️ {loadError}</div>
+      ) : forms.length === 0 ? (
         <div className="card" style={{ padding: 32, textAlign: 'center' }}>
           <div style={{ fontSize: 40 }}>📋</div>
           <h2>Aún no hay formularios</h2>

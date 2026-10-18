@@ -22,6 +22,7 @@ export default function AdminDetail() {
   const [filter, setFilter] = useState<'all' | 'si' | 'no'>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     if (sessionStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
@@ -31,9 +32,15 @@ export default function AdminDetail() {
     if (!authed || !id) return;
     (async () => {
       setLoading(true);
-      const f = await getForm(id);
-      setForm(f);
-      setResponses(await listResponses(id));
+      setLoadError('');
+      try {
+        const f = await getForm(id);
+        setForm(f);
+        setResponses(await listResponses(id));
+      } catch (e: any) {
+        console.error(e);
+        setLoadError('No se pudieron cargar las respuestas: ' + (e?.message || 'error de conexión') + '. Revisa las reglas y el índice de Firestore.');
+      }
       setLoading(false);
     })();
   }, [authed, id]);
@@ -99,6 +106,11 @@ export default function AdminDetail() {
   return (
     <main style={{ maxWidth: 1000, margin: '0 auto', padding: 20 }}>
       <a href="/" style={{ textDecoration: 'none' }}>← Todos los formularios</a>
+      {loadError && (
+        <div className="card" style={{ padding: 16, marginTop: 14, background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
+          ⚠️ {loadError}
+        </div>
+      )}
       {form.headerImage && <img src={form.headerImage} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 16, marginTop: 14 }} />}
       <h1 style={{ fontSize: 26, marginBottom: 4 }}>{form.title}</h1>
       <p style={{ color: '#64748b', marginTop: 0 }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>

@@ -3,7 +3,9 @@ import { getDb, isFirebaseConfigured } from './firebase';
 import { GleraForm, GleraResponse } from './types';
 
 // Almacenamiento: Firestore si hay config, si no localStorage (modo demo local).
-// Así la app funciona sin configurar nada y, al añadir las variables en Vercel, pasa a guardado compartido.
+// IMPORTANTE: si Firebase está configurado, los errores de Firestore NO se ocultan:
+// se propagan para que la interfaz los muestre en vez de fingir que todo fue bien
+// (un fallo silencioso haría "desaparecer" formularios y respuestas).
 
 const LS_FORMS = 'glera_forms_v1';
 const LS_RESP = 'glera_responses_v1';
@@ -23,15 +25,21 @@ function writeLS<T>(key: string, items: T[]) {
   localStorage.setItem(key, JSON.stringify(items));
 }
 
-export async function listForms(): Promise<GleraForm[]> {
+function useFirestore(): boolean {
+  return isFirebaseConfigured();
+}
+
+function requireDb() {
   const db = getDb();
-  if (db && isFirebaseConfigured()) {
-    try {
-      const snap = await getDocs(query(collection(db, 'glera_forms'), orderBy('createdAt', 'desc')));
-      return snap.docs.map(d => d.data() as GleraForm);
-    } catch (e) {
-      console.warn('Firestore listForms falló, uso local', e);
-    }
+  if (!db) throw new Error('Firebase no está configurado correctamente');
+  return db;
+}
+
+export async function listForms(): Promise<GleraForm[]> {
+  if (useFirestore()) {
+    const db = requireDb();
+    const snap = await getDocs(query(collection(db, 'glera_forms'), orderBy('createdAt', 'desc')));
+    return snap.docs.map(d => d.data() as GleraForm);
   }
   return readLS<GleraForm>(LS_FORMS).sort((a, b) => b.createdAt - a.createdAt);
 }
@@ -42,14 +50,10 @@ export async function getForm(id: string): Promise<GleraForm | null> {
 }
 
 export async function saveForm(form: GleraForm): Promise<void> {
-  const db = getDb();
-  if (db && isFirebaseConfigured()) {
-    try {
-      await setDoc(doc(db, 'glera_forms', form.id), form);
-      return;
-    } catch (e) {
-      console.warn('Firestore saveForm falló, uso local', e);
-    }
+  if (useFirestore()) {
+    const db = requireDb();
+    await setDoc(doc(db, 'glera_forms', form.id), form);
+    return;
   }
   const all = readLS<GleraForm>(LS_FORMS);
   const idx = all.findIndex(f => f.id === form.id);
@@ -58,46 +62,36 @@ export async function saveForm(form: GleraForm): Promise<void> {
 }
 
 export async function deleteForm(id: string): Promise<void> {
-  const db = getDb();
-  if (db && isFirebaseConfigured()) {
-    try {
-      await deleteDoc(doc(db, 'glera_forms', id));
-      // borra también respuestas
-      const res = await listResponses(id);
-      for (const r of res) {
-        try { await deleteDoc(doc(db, 'glera_responses', r.id)); } catch {}
-      }
-      return;
-    } catch (e) {
-      console.warn('Firestore deleteForm falló', e);
+  if (useFirestore()) {
+    const db = requireDb();
+    await deleteDoc(doc(db, 'glera_forms', id));
+    // borra también respuestas
+    const res = await listResponses(id);
+    for (const r of res) {
+      await deleteDoc(doc(db, 'glera_responses', r.id));
     }
+    return;
   }
   writeLS(LS_FORMS, readLS<GleraForm>(LS_FORMS).filter(f => f.id !== id));
   writeLS(LS_RESP, readLS<GleraResponse>(LS_RESP).filter(r => r.formId !== id));
 }
 
 export async function listResponses(formId: string): Promise<GleraResponse[]> {
-  const db = getDb();
-  if (db && isFirebaseConfigured()) {
-    try {
-      const snap = await getDocs(query(collection(db, 'glera_responses'), where('formId', '==', formId), orderBy('createdAt', 'desc')));
-      return snap.docs.map(d => d.data() as GleraResponse);
-    } catch (e) {
-      console.warn('Firestore listResponses falló, uso local', e);
-    }
+  if (useFirestore()) {
+    const db = requireDb();
+    // OJO: esta consulta necesita el índice compuesto (formId ASC, createdAt DESC)
+    // en Firestore → Índices. Sin él, Firestore lanza un error (ya no se oculta).
+    const snap = await getDocs(query(collection(db, 'glera_responses'), where('formId', '==', formId), orderBy('createdAt', 'desc')));
+    return snap.docs.map(d => d.data() as GleraResponse);
   }
   return readLS<GleraResponse>(LS_RESP).filter(r => r.formId === formId).sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export async function saveResponse(resp: GleraResponse): Promise<void> {
-  const db = getDb();
-  if (db && isFirebaseConfigured()) {
-    try {
-      await setDoc(doc(db, 'glera_responses', resp.id), resp);
-      return;
-    } catch (e) {
-      console.warn('Firestore saveResponse falló, uso local', e);
-    }
+  if (useFirestore()) {
+    const db = requireDb();
+    await setDoc(doc(db, 'glera_responses', resp.id), resp);
+    return;
   }
   const all = readLS<GleraResponse>(LS_RESP);
   all.unshift(resp);
@@ -105,9 +99,10 @@ export async function saveResponse(resp: GleraResponse): Promise<void> {
 }
 
 export async function deleteResponse(id: string): Promise<void> {
-  const db = getDb();
-  if (db && isFirebaseConfigured()) {
-    try { await deleteDoc(doc(db, 'glera_responses', id)); return; } catch {}
+  if (useFirestore()) {
+    const db = requireDb();
+    await deleteDoc(doc(db, 'glera_responses', id));
+    return;
   }
   writeLS(LS_RESP, readLS<GleraResponse>(LS_RESP).filter(r => r.id !== id));
 }
