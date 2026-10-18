@@ -140,10 +140,6 @@ export default function AdminPage() {
     if (typeof window === 'undefined') return '';
     return `${window.location.origin}/f/${id}`;
   }
-  function waLink(f: GleraForm) {
-    const text = `👋 *${f.title}*\n${f.planDate ? `📅 ${f.planDate}\n` : ''}${f.planPlace ? `📍 ${f.planPlace}\n` : ''}\nRellena el formulario para apuntar a tu hijo:\n${publicUrl(f.id)}`;
-    return `https://wa.me/?text=${encodeURIComponent(text)}`;
-  }
   function copyLink(id: string) {
     navigator.clipboard.writeText(publicUrl(id)).then(() => { setCopied(id); setTimeout(() => setCopied(''), 2000); });
   }
@@ -286,29 +282,30 @@ export default function AdminPage() {
             const c = counts[f.id] || { total: 0, si: 0, no: 0 };
             return (
               <article key={f.id} className="card" style={{ overflow: 'hidden' }}>
-                {f.headerImage && <img src={f.headerImage} alt="" style={{ width: '100%', maxHeight: 170, objectFit: 'cover' }} />}
-                <div style={{ padding: 18 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                    <h2 style={{ margin: 0, fontSize: 20 }}>{f.title}</h2>
+                {f.headerImage && <img src={f.headerImage} alt="" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', display: 'block' }} />}
+                <div style={{ padding: '14px 18px 12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
+                    <h2 style={{ margin: 0, fontSize: 18 }}>{f.title}</h2>
                     <span className={`badge ${f.status === 'open' ? 'badge-open' : 'badge-closed'}`}>{f.status === 'open' ? 'Abierto' : 'Cerrado'}</span>
                   </div>
-                  <p style={{ color: '#64748b', fontSize: 14, margin: '6px 0' }}>{f.planDate}{f.planDate && f.planPlace ? ' · ' : ''}{f.planPlace}</p>
-                  <div style={{ display: 'flex', gap: 16, fontSize: 15, margin: '10px 0' }}>
-                    <span><strong>{c.total}</strong> respuestas</span>
-                    <span style={{ color: '#0d9488' }}><strong>{c.si}</strong> se apuntan ✅</span>
-                    <span style={{ color: '#b91c1c' }}><strong>{c.no}</strong> no se apuntan</span>
+                  {(f.planDate || f.planPlace) && (
+                    <p style={{ color: '#64748b', fontSize: 13, margin: '4px 0 0' }}>{f.planDate}{f.planDate && f.planPlace ? ' · ' : ''}{f.planPlace}</p>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                    <span className="stat"><strong>{c.total}</strong> respuestas</span>
+                    <span className="stat stat-ok"><strong>{c.si}</strong> se apuntan</span>
+                    <span className="stat stat-ko"><strong>{c.no}</strong> no se apuntan</span>
                   </div>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <a href={`/admin/${f.id}`} className="btn btn-primary" style={{ textDecoration: 'none' }}>Ver respuestas</a>
-                    <a href={`/f/${f.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none' }}>Vista familia ↗</a>
-                    <a href={waLink(f)} target="_blank" rel="noreferrer" className="btn btn-wa" style={{ textDecoration: 'none' }}>Compartir por WhatsApp</a>
-                    <button className="btn btn-ghost" onClick={() => copyLink(f.id)}>{copied === f.id ? '¡Copiado!' : 'Copiar enlace'}</button>
-                    <button className="btn btn-ghost" onClick={() => setEditing(f)}>Editar</button>
-                    <button className="btn btn-ghost" onClick={() => handleDuplicate(f)}>Duplicar</button>
-                    <button className="btn btn-ghost" onClick={() => toggleStatus(f)}>{f.status === 'open' ? 'Cerrar' : 'Reabrir'}</button>
-                    <button className="btn btn-danger" onClick={() => handleDelete(f)}>Borrar</button>
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 10, wordBreak: 'break-all' }}>Enlace: {publicUrl(f.id)}</div>
+                </div>
+                <div className="actions-bar">
+                  <a href={`/admin/${f.id}`} className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>Ver respuestas</a>
+                  <span style={{ flex: 1 }} />
+                  <a href={`/f/${f.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }} title="Abrir la vista que ven las familias">Vista familia ↗</a>
+                  <button className="btn btn-ghost btn-sm" onClick={() => copyLink(f.id)} title="Copiar el enlace público del formulario">{copied === f.id ? '¡Copiado!' : 'Copiar enlace'}</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditing(f)}>Editar</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => handleDuplicate(f)}>Duplicar</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => toggleStatus(f)}>{f.status === 'open' ? 'Cerrar' : 'Reabrir'}</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(f)}>Borrar</button>
                 </div>
               </article>
             );

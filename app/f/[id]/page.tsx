@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { GleraForm, uid } from '../../../lib/types';
-import { getForm, saveResponse, getSavedChild, saveChild } from '../../../lib/store';
+import { getForm, saveResponse, getSavedChild, saveChild, listResponses } from '../../../lib/store';
 import { GLERA_LOGO } from '../../../lib/logo';
 
 export default function PublicForm() {
@@ -50,6 +50,15 @@ export default function PublicForm() {
     }
     setSending(true);
     try {
+      // Evita inscripciones duplicadas: mismo nombre + apellidos en este formulario
+      const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+      const existing = await listResponses(form.id);
+      const dup = existing.some(r => norm(r.childName) === norm(childName) && norm(r.childSurname) === norm(childSurname));
+      if (dup) {
+        setError(`Ya hay una respuesta registrada para ${childName.trim()} ${childSurname.trim()} en este plan, así que no se puede enviar otra vez. Si necesitas cambiar algo, contacta con Glera.`);
+        setSending(false);
+        return;
+      }
       await saveResponse({
         id: uid(),
         formId: form.id,

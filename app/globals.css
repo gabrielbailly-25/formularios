@@ -7,7 +7,6 @@ input, textarea, select { font: inherit; }
 .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
 .btn-ghost { background: #fff; border: 1px solid #d1d5db; color: #0f172a; }
 .btn-danger { background: #fee2e2; color: #b91c1c; }
-.btn-wa { background: #25D366; color: #fff; }
 .card { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
 .field { width: 100%; border: 1px solid #d1d5db; border-radius: 12px; padding: 12px 14px; font-size: 16px; background: #fff; }
 .field:focus { outline: 2px solid #0d9488; border-color: #0d9488; }
@@ -15,3 +14,11 @@ input, textarea, select { font: inherit; }
 .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
 .badge-open { background: #ccfbf1; color: #0f766e; }
 .badge-closed { background: #fee2e2; color: #991b1b; }
+.btn-sm { padding: 7px 13px; font-size: 13px; }
+.actions-bar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 10px 18px; border-top: 1px solid #eef2f7; background: #f8fafc; border-radius: 0 0 16px 16px; }
+.stat { font-size: 13px; color: #475569; background: #f1f5f9; border-radius: 999px; padding: 4px 10px; }
+.stat strong { color: #0f172a; }
+.stat-ok { background: #ccfbf1; color: #0f766e; }
+.stat-ok strong { color: #0f766e; }
+.stat-ko { background: #fee2e2; color: #991b1b; }
+.stat-ko strong { color: #991b1b; }
