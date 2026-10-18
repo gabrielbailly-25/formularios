@@ -40,6 +40,18 @@ Alternativa por terminal (desde esta carpeta, con tu sesión de Firebase): `fire
 
 Sin Firebase, la app avisa arriba con “Modo local”.
 
+## Notificaciones push al admin
+
+Cuando una familia rellena un formulario, el admin recibe una notificación push en su móvil/ordenador con el **título del plan** y el **nombre y apellidos del hijo**, y el icono de la app muestra una insignia con el número de respuestas. Al entrar al panel, la insignia se limpia.
+
+Para activarlo (una vez):
+
+1. **Clave VAPID** (para que el navegador pueda recibir push): Firebase Console → proyecto `formularios` → ⚙️ Configuración del proyecto → **Cloud Messaging** → **Certificados de inserción web** → **Generar par de claves** → copia la clave → en Vercel añade `NEXT_PUBLIC_FIREBASE_VAPID_KEY` con ese valor.
+2. **Cuenta de servicio** (para que el servidor pueda enviar los push): en la misma Configuración → **Cuentas de servicio** → **Generar nueva clave privada** → descarga el JSON → en Vercel añade `FIREBASE_SERVICE_ACCOUNT` pegando el contenido del JSON entero (en una línea).
+3. **Reglas**: publica el `firestore.rules` de este repo (incluye la colección `glera_admin_tokens`).
+4. **Redeploy** en Vercel.
+5. En la app, entra al panel admin y pulsa **🔔 Activar notificaciones**, acepta el permiso. La insignia funciona con la app instalada (en iPhone: primero **Añadir a pantalla de inicio**, y el push requiere iOS 16.4+).
+
 ## Contraseña admin
 
 Por defecto: `glera2026`. Cámbiala en Vercel con `NEXT_PUBLIC_ADMIN_PASSWORD` y haz Redeploy. El acceso admin no pide cuenta de Google ni registro.

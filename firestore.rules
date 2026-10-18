@@ -12,5 +12,9 @@ service cloud.firestore {
     match /glera_responses/{responseId} {
       allow read, write: if true;
     }
+    // Tokens de notificaciones push del admin (un documento por dispositivo)
+    match /glera_admin_tokens/{tokenId} {
+      allow read, write: if true;
+    }
   }
 }

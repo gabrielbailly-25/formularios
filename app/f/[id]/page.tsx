@@ -71,6 +71,20 @@ export default function PublicForm() {
       });
       // Guarda el nombre para futuros formularios en este móvil
       saveChild(childName, childSurname);
+      // Avisa al admin con push (título del plan + nombre del hijo); no bloquea
+      try {
+        fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            formId: form.id,
+            formTitle: form.title,
+            childName: childName.trim(),
+            childSurname: childSurname.trim(),
+            attends,
+          }),
+        }).catch(() => {});
+      } catch {}
       setSent(true);
     } catch (err) {
       console.error(err);

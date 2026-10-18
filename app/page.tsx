@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { GleraForm, Question, QuestionType, uid } from '../lib/types';
 import { listForms, saveForm, deleteForm, listResponses } from '../lib/store';
 import { adminPassword } from '../lib/firebase';
+import { pushSupported, pushPermission, enableAdminPush, listenForegroundPush, clearAppBadge } from '../lib/push';
 import RichTextEditor from '../components/RichTextEditor';
 import { GLERA_LOGO } from '../lib/logo';
 
@@ -41,10 +42,24 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState('');
   const [loadError, setLoadError] = useState('');
+  const [pushState, setPushState] = useState<'unknown' | 'off' | 'on' | 'working' | 'unsupported'>('unknown');
+  const [pushMsg, setPushMsg] = useState('');
 
   useEffect(() => {
     if (sessionStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
   }, []);
+
+  // Al entrar el admin: limpia la insignia y prepara notificaciones
+  useEffect(() => {
+    if (!authed) return;
+    clearAppBadge();
+    const perm = pushPermission();
+    if (perm === 'granted') setPushState('on');
+    else if (perm === 'unsupported') setPushState('unsupported');
+    else setPushState('off');
+    const stop = listenForegroundPush(() => { refresh(); });
+    return stop;
+  }, [authed]);
 
   async function refresh() {
     setLoading(true);
@@ -263,11 +278,29 @@ export default function AdminPage() {
           </div>
           <p style={{ color: '#64748b', margin: '8px 0 0', fontSize: 14 }}>Planes de fin de semana — crea, comparte por WhatsApp y ve quién se apunta.</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {pushState === 'off' && (
+            <button className="btn btn-ghost" onClick={async () => {
+              setPushState('working'); setPushMsg('');
+              try {
+                await enableAdminPush();
+                setPushState('on');
+                setPushMsg('Notificaciones activadas: te avisaremos por cada respuesta. ✓');
+              } catch (e: any) {
+                setPushState('off');
+                setPushMsg(e?.message || 'No se pudieron activar.');
+              }
+            }}>🔔 Activar notificaciones</button>
+          )}
+          {pushState === 'on' && (
+            <span className="btn btn-ghost" style={{ cursor: 'default' }} title="Recibirás un aviso en este dispositivo por cada familia que rellene un formulario">🔔 Activadas</span>
+          )}
+          {pushState === 'working' && <span style={{ alignSelf: 'center', color: '#64748b', fontSize: 14 }}>Activando…</span>}
           <button className="btn btn-primary" onClick={() => setEditing(emptyForm())}>+ Nuevo formulario</button>
           <button className="btn btn-ghost" onClick={() => { sessionStorage.removeItem('glera_admin_auth'); setAuthed(false); }}>Salir</button>
         </div>
       </header>
+      {pushMsg && <p style={{ fontSize: 13, color: pushState === 'on' ? '#0f766e' : '#b91c1c', margin: '8px 0 0' }}>{pushMsg}</p>}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, margin: '20px 0' }}>
         <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800 }}>{forms.length}</div><div style={{ color: '#64748b', fontSize: 14 }}>Formularios</div></div>
