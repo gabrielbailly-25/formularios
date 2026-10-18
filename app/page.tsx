@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { GleraForm, Question, QuestionType, uid } from '../lib/types';
 import { listForms, saveForm, deleteForm, listResponses } from '../lib/store';
-import { isFirebaseConfigured, adminPassword } from '../lib/firebase';
+import { adminPassword } from '../lib/firebase';
 import RichTextEditor from '../components/RichTextEditor';
 import { GLERA_LOGO } from '../lib/logo';
 
@@ -249,13 +249,12 @@ export default function AdminPage() {
   return (
     <main style={{ maxWidth: 960, margin: '0 auto', padding: 20 }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 48, width: 'auto' }} />
-          <div>
-            <h1 style={{ margin: '0 0 4px', fontSize: 28 }}>Glera · Formularios</h1>
-          <p style={{ color: '#64748b', margin: 0 }}>Planes de fin de semana — crea, comparte por WhatsApp y ve quién se apunta.</p>
-          <p style={{ fontSize: 13, margin: '8px 0 0' }}>{isFirebaseConfigured() ? '● Guardado compartido (Firestore)' : '● Modo local — añade Firebase en Vercel para compartir datos entre móviles'}</p>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 30, width: 'auto', flexShrink: 0 }} />
+            <h1 style={{ margin: 0, fontSize: 20, whiteSpace: 'nowrap' }}>Glera · Formularios</h1>
           </div>
+          <p style={{ color: '#64748b', margin: '8px 0 0', fontSize: 14 }}>Planes de fin de semana — crea, comparte por WhatsApp y ve quién se apunta.</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-primary" onClick={() => setEditing(emptyForm())}>+ Nuevo formulario</button>
@@ -298,14 +297,14 @@ export default function AdminPage() {
                   </div>
                 </div>
                 <div className="actions-bar">
-                  <a href={`/admin/${f.id}`} className="btn btn-primary btn-sm" style={{ textDecoration: 'none' }}>Ver respuestas</a>
-                  <span style={{ flex: 1 }} />
-                  <a href={`/f/${f.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm" style={{ textDecoration: 'none' }} title="Abrir la vista que ven las familias">Vista familia ↗</a>
-                  <button className="btn btn-ghost btn-sm" onClick={() => copyLink(f.id)} title="Copiar el enlace público del formulario">{copied === f.id ? '¡Copiado!' : 'Copiar enlace'}</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setEditing(f)}>Editar</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => handleDuplicate(f)}>Duplicar</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => toggleStatus(f)}>{f.status === 'open' ? 'Cerrar' : 'Reabrir'}</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(f)}>Borrar</button>
+                  <a href={`/admin/${f.id}`} className="btn btn-primary btn-xs" style={{ textDecoration: 'none' }}>Ver respuestas</a>
+                  <a href={`/f/${f.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-xs" style={{ textDecoration: 'none' }} title="Abrir la vista que ven las familias">Vista familia ↗</a>
+                  <button className="btn btn-ghost btn-xs" onClick={() => copyLink(f.id)} title="Copiar el enlace público del formulario">{copied === f.id ? '¡Copiado!' : 'Copiar enlace'}</button>
+                  <span className="actions-sep" />
+                  <button className="btn btn-ghost btn-xs" onClick={() => setEditing(f)}>Editar</button>
+                  <button className="btn btn-ghost btn-xs" onClick={() => handleDuplicate(f)}>Duplicar</button>
+                  <button className="btn btn-ghost btn-xs" onClick={() => toggleStatus(f)}>{f.status === 'open' ? 'Cerrar' : 'Reabrir'}</button>
+                  <button className="btn btn-danger btn-xs" onClick={() => handleDelete(f)}>Borrar</button>
                 </div>
               </article>
             );
