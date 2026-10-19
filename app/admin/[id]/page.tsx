@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { GleraForm, GleraResponse } from '../../../lib/types';
+import { GleraForm, GleraResponse, formKind } from '../../../lib/types';
 import { getForm, listResponses, deleteResponse, deleteForm } from '../../../lib/store';
 import { adminPassword } from '../../../lib/firebase';
 import { GLERA_LOGO } from '../../../lib/logo';
@@ -48,7 +48,10 @@ export default function AdminDetail() {
   const filtered = useMemo(() => {
     return responses.filter(r => {
       if (filter !== 'all' && r.attends !== filter) return false;
-      if (search && !(`${r.childName} ${r.childSurname}`.toLowerCase().includes(search.toLowerCase()))) return false;
+      if (search) {
+        const hay = ((r.familyName || '') + ' ' + (r.childName || '') + ' ' + (r.childSurname || '')).toLowerCase();
+        if (!hay.includes(search.toLowerCase())) return false;
+      }
       return true;
     });
   }, [responses, filter, search]);
@@ -59,14 +62,19 @@ export default function AdminDetail() {
   function exportCSV() {
     if (!form) return;
     const qHeaders = form.questions.map(q => q.label);
+    const isFam = formKind(form) === 'familias';
     const isFullAuth = form.authText && (form.authType || 'simple') === 'full';
-    const header = ['Fecha', 'Nombre', 'Apellidos', 'Curso', 'Se apunta', ...(form.authText ? ['Autorizado'] : []), ...(isFullAuth ? ['Autoriza (nombre)', 'Autoriza (DNI)'] : []), 'Observaciones', ...qHeaders];
+    const header = isFam
+      ? ['Fecha', 'Familia', ...(form.authText ? ['Autorizado'] : []), ...(isFullAuth ? ['Autoriza (nombre)', 'Autoriza (DNI)'] : []), ...qHeaders]
+      : ['Fecha', 'Nombre', 'Apellidos', 'Curso', 'Se apunta', ...(form.authText ? ['Autorizado'] : []), ...(isFullAuth ? ['Autoriza (nombre)', 'Autoriza (DNI)'] : []), 'Observaciones', ...qHeaders];
     const rows = filtered.map(r => [
       new Date(r.createdAt).toLocaleString('es-ES'),
-      r.childName, r.childSurname, r.curso || '', r.attends === 'si' ? 'Sí' : 'No',
+      ...(isFam
+        ? [r.familyName || '']
+        : [r.childName || '', r.childSurname || '', r.curso || '', r.attends === 'si' ? 'Sí' : 'No']),
       ...(form.authText ? [r.authorized ? 'Sí' : 'No'] : []),
       ...(isFullAuth ? [r.authByName || '', r.authByDni || ''] : []),
-      r.observation,
+      ...(!isFam ? [r.observation || ''] : []),
       ...form.questions.map(q => {
         const v = r.answers[q.id];
         if (Array.isArray(v)) return v.join(', ');
@@ -84,7 +92,8 @@ export default function AdminDetail() {
   }
 
   async function handleDeleteResp(r: GleraResponse) {
-    if (!confirm(`¿Borrar la respuesta de ${r.childName} ${r.childSurname}?`)) return;
+    const who = r.familyName || `${r.childName || ''} ${r.childSurname || ''}`.trim();
+    if (!confirm(`¿Borrar la respuesta de ${who}?`)) return;
     await deleteResponse(r.id);
     setResponses(prev => prev.filter(x => x.id !== r.id));
   }
@@ -107,6 +116,8 @@ export default function AdminDetail() {
   if (loading) return <main style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>Cargando…</main>;
   if (!form) return <main style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}><p>Formulario no encontrado.</p><a href="/">← Volver</a></main>;
 
+  const isFamilias = formKind(form) === 'familias';
+
   return (
     <main style={{ maxWidth: 1000, margin: '0 auto', padding: 20 }}>
       <a href="/" style={{ textDecoration: 'none' }}>← Todos los formularios</a>
@@ -117,20 +128,20 @@ export default function AdminDetail() {
       )}
       {form.headerImage && <img src={form.headerImage} alt="" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 16, marginTop: 14 }} />}
       <h1 style={{ fontSize: 26, marginBottom: 4 }}>{form.title}</h1>
-      <p style={{ color: '#64748b', marginTop: 0 }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>
+      <p style={{ color: '#64748b', marginTop: 0 }}>{isFamilias ? '👨‍👩‍👧 Formulario para familias' : '👦 Formulario para hijos'}{form.planDate || form.planPlace ? ` · ${form.planDate}${form.planDate && form.planPlace ? ' · ' : ''}${form.planPlace}` : ''}</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 12, margin: '18px 0' }}>
         <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800 }}>{responses.length}</div><div style={{ color: '#64748b' }}>Han rellenado</div></div>
-        <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: '#0d9488' }}>{si} ✅</div><div style={{ color: '#64748b' }}>Se apuntan</div></div>
-        <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: '#b91c1c' }}>{no}</div><div style={{ color: '#64748b' }}>No se apuntan</div></div>
-        <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800 }}>{responses.length ? Math.round((si / responses.length) * 100) : 0}%</div><div style={{ color: '#64748b' }}>Se apuntan</div></div>
+        {!isFamilias && <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: '#0d9488' }}>{si} ✅</div><div style={{ color: '#64748b' }}>Se apuntan</div></div>}
+        {!isFamilias && <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: '#b91c1c' }}>{no}</div><div style={{ color: '#64748b' }}>No se apuntan</div></div>}
+        {!isFamilias && <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800 }}>{responses.length ? Math.round((si / responses.length) * 100) : 0}%</div><div style={{ color: '#64748b' }}>Se apuntan</div></div>}
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
         <button className="btn btn-ghost" onClick={() => setFilter('all')} style={{ background: filter === 'all' ? '#0d9488' : undefined, color: filter === 'all' ? '#fff' : undefined }}>Todos ({responses.length})</button>
-        <button className="btn btn-ghost" onClick={() => setFilter('si')} style={{ background: filter === 'si' ? '#0d9488' : undefined, color: filter === 'si' ? '#fff' : undefined }}>Se apuntan ({si})</button>
-        <button className="btn btn-ghost" onClick={() => setFilter('no')} style={{ background: filter === 'no' ? '#0d9488' : undefined, color: filter === 'no' ? '#fff' : undefined }}>No se apuntan ({no})</button>
-        <input className="field" style={{ maxWidth: 280 }} placeholder="Buscar por nombre…" value={search} onChange={e => setSearch(e.target.value)} />
+        {!isFamilias && <button className="btn btn-ghost" onClick={() => setFilter('si')} style={{ background: filter === 'si' ? '#0d9488' : undefined, color: filter === 'si' ? '#fff' : undefined }}>Se apuntan ({si})</button>}
+        {!isFamilias && <button className="btn btn-ghost" onClick={() => setFilter('no')} style={{ background: filter === 'no' ? '#0d9488' : undefined, color: filter === 'no' ? '#fff' : undefined }}>No se apuntan ({no})</button>}
+        <input className="field" style={{ maxWidth: 280 }} placeholder={isFamilias ? 'Buscar por familia…' : 'Buscar por nombre…'} value={search} onChange={e => setSearch(e.target.value)} />
         <button className="btn btn-primary" onClick={exportCSV}>⬇ Exportar CSV</button>
         <a href={`/f/${form.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ textDecoration: 'none' }}>Ver formulario ↗</a>
       </div>
@@ -142,11 +153,17 @@ export default function AdminDetail() {
           <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 16, overflow: 'hidden' }}>
             <thead>
               <tr style={{ background: '#f8fafc', textAlign: 'left' }}>
-                <th style={{ padding: 12 }}>Hijo</th>
-                <th style={{ padding: 12 }}>Curso</th>
-                <th style={{ padding: 12 }}>Se apunta</th>
+                {isFamilias ? (
+                  <th style={{ padding: 12 }}>Familia</th>
+                ) : (
+                  <>
+                    <th style={{ padding: 12 }}>Hijo</th>
+                    <th style={{ padding: 12 }}>Curso</th>
+                    <th style={{ padding: 12 }}>Se apunta</th>
+                  </>
+                )}
                 {form.authText && <th style={{ padding: 12 }}>Autorizado</th>}
-                <th style={{ padding: 12 }}>Observaciones</th>
+                {!isFamilias && <th style={{ padding: 12 }}>Observaciones</th>}
                 {form.questions.map(q => <th key={q.id} style={{ padding: 12 }}>{q.label}</th>)}
                 <th style={{ padding: 12 }}>Fecha</th>
                 <th style={{ padding: 12 }}></th>
@@ -155,11 +172,17 @@ export default function AdminDetail() {
             <tbody>
               {filtered.map(r => (
                 <tr key={r.id} style={{ borderTop: '1px solid #e2e8f0' }}>
-                  <td style={{ padding: 12, fontWeight: 700 }}>{r.childName} {r.childSurname}</td>
-                  <td style={{ padding: 12, whiteSpace: 'nowrap' }}>{r.curso || '—'}</td>
-                  <td style={{ padding: 12 }}>{r.attends === 'si' ? '✅ Sí' : '❌ No'}</td>
+                  {isFamilias ? (
+                    <td style={{ padding: 12, fontWeight: 700 }}>{r.familyName || '—'}</td>
+                  ) : (
+                    <>
+                      <td style={{ padding: 12, fontWeight: 700 }}>{r.childName || ''} {r.childSurname || ''}</td>
+                      <td style={{ padding: 12, whiteSpace: 'nowrap' }}>{r.curso || '—'}</td>
+                      <td style={{ padding: 12 }}>{r.attends === 'si' ? '✅ Sí' : '❌ No'}</td>
+                    </>
+                  )}
                   {form.authText && <td style={{ padding: 12 }}>{r.authorized ? '✅ Sí' : '❌ No'}{(form.authType || 'simple') === 'full' && r.authByName && <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>{r.authByName}{r.authByDni ? ` · DNI ${r.authByDni}` : ''}</div>}</td>}
-                  <td style={{ padding: 12, maxWidth: 220 }}>{r.observation || '—'}</td>
+                  {!isFamilias && <td style={{ padding: 12, maxWidth: 220 }}>{r.observation || '—'}</td>}
                   {form.questions.map(q => {
                     const v = r.answers[q.id];
                     return <td key={q.id} style={{ padding: 12 }}>{Array.isArray(v) ? v.join(', ') : (v ?? '—')}</td>;

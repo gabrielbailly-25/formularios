@@ -22,8 +22,9 @@ function getAdmin(): typeof admin {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { formId, formTitle, childName, childSurname, attends } = await req.json();
-    if (!formId || !childName) {
+    const { formId, formTitle, childName, childSurname, familyName, attends } = await req.json();
+    const who = (familyName || '').trim() || `${childName || ''} ${childSurname || ''}`.trim();
+    if (!formId || !who) {
       return NextResponse.json({ ok: false, error: 'Faltan datos' }, { status: 400 });
     }
     const a = getAdmin();
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
 
     const attendsTxt = attends === 'si' ? ' · Se apunta ✅' : attends === 'no' ? ' · No se apunta' : '';
     const title = `📋 ${formTitle || 'Nuevo formulario'}`;
-    const body = `${childName} ${childSurname || ''}`.trim() + ` ha rellenado el formulario${attendsTxt}`;
+    const body = `${who} ha rellenado el formulario${attendsTxt}`;
 
     const message: admin.messaging.MulticastMessage = {
       tokens,

@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { GleraForm, uid, CURSOS, DATA_CLAUSE } from '../../../lib/types';
-import { getForm, saveResponse, getSavedChild, saveChild, listResponses } from '../../../lib/store';
+import { GleraForm, uid, CURSOS, DATA_CLAUSE, formKind } from '../../../lib/types';
+import { getForm, saveResponse, getSavedChild, saveChild, getSavedFamily, saveFamily, listResponses } from '../../../lib/store';
 import { GLERA_LOGO } from '../../../lib/logo';
 
 export default function PublicForm() {
@@ -14,6 +14,7 @@ export default function PublicForm() {
   const [childName, setChildName] = useState('');
   const [childSurname, setChildSurname] = useState('');
   const [curso, setCurso] = useState('');
+  const [familyName, setFamilyName] = useState('');
   const [attends, setAttends] = useState<'si' | 'no' | ''>('');
   const [authorized, setAuthorized] = useState(false);
   const [authByName, setAuthByName] = useState('');
@@ -35,6 +36,7 @@ export default function PublicForm() {
       setCurso(saved.curso);
       setAuthByName(saved.authName);
       setAuthByDni(saved.authDni);
+      setFamilyName(getSavedFamily());
       setLoading(false);
     })();
   }, [id]);
@@ -43,10 +45,15 @@ export default function PublicForm() {
     e.preventDefault();
     setError('');
     if (!form) return;
-    if (!childName.trim()) { setError('Escribe el nombre de tu hijo.'); return; }
-    if (!childSurname.trim()) { setError('Escribe los apellidos de tu hijo.'); return; }
-    if (!curso) { setError('Elige el curso de tu hijo.'); return; }
-    if (!attends) { setError('Elige si se apunta o no.'); return; }
+    const isFamilias = formKind(form) === 'familias';
+    if (isFamilias) {
+      if (!familyName.trim()) { setError('Escribe el nombre de tu familia.'); return; }
+    } else {
+      if (!childName.trim()) { setError('Escribe el nombre de tu hijo.'); return; }
+      if (!childSurname.trim()) { setError('Escribe los apellidos de tu hijo.'); return; }
+      if (!curso) { setError('Elige el curso de tu hijo.'); return; }
+      if (!attends) { setError('Elige si se apunta o no.'); return; }
+    }
     const isFullAuth = Boolean(form.authText) && (form.authType || 'simple') === 'full';
     if (form.authText && !authorized) { setError('Debes aceptar la autorización para poder enviar el formulario.'); return; }
     if (isFullAuth) {
@@ -64,23 +71,31 @@ export default function PublicForm() {
     }
     setSending(true);
     try {
-      // Evita inscripciones duplicadas: mismo nombre + apellidos en este formulario
-      const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ');
+      // Evita respuestas duplicadas: mismo hijo (o misma familia) en este formulario
+      const norm = (s: string) => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
       const existing = await listResponses(form.id);
-      const dup = existing.some(r => norm(r.childName) === norm(childName) && norm(r.childSurname) === norm(childSurname));
+      const dup = isFamilias
+        ? existing.some(r => norm(r.familyName || '') === norm(familyName))
+        : existing.some(r => norm(r.childName || '') === norm(childName) && norm(r.childSurname || '') === norm(childSurname));
       if (dup) {
-        setError(`Ya hay una respuesta registrada para ${childName.trim()} ${childSurname.trim()} en este plan, así que no se puede enviar otra vez. Si necesitas cambiar algo, contacta con Glera.`);
+        const who = isFamilias ? familyName.trim() : `${childName.trim()} ${childSurname.trim()}`;
+        setError(`Ya hay una respuesta registrada para ${who} en este plan, así que no se puede enviar otra vez. Si necesitas cambiar algo, contacta con Glera.`);
         setSending(false);
         return;
       }
       await saveResponse({
         id: uid(),
         formId: form.id,
-        childName: childName.trim(),
-        childSurname: childSurname.trim(),
-        curso,
-        attends: attends as 'si' | 'no',
-        observation: observation.trim(),
+        kind: formKind(form),
+        ...(isFamilias
+          ? { familyName: familyName.trim() }
+          : {
+              childName: childName.trim(),
+              childSurname: childSurname.trim(),
+              curso,
+              attends: attends as 'si' | 'no',
+              observation: observation.trim(),
+            }),
         authorized: form.authText ? authorized : undefined,
         authByName: isFullAuth ? authByName.trim() : undefined,
         authByDni: isFullAuth ? authByDni.trim() : undefined,
@@ -88,7 +103,8 @@ export default function PublicForm() {
         createdAt: Date.now(),
       });
       // Guarda el nombre para futuros formularios en este móvil
-      saveChild(childName, childSurname, curso, authByName, authByDni);
+      if (isFamilias) saveFamily(familyName);
+      else saveChild(childName, childSurname, curso, authByName, authByDni);
       // Avisa al admin con push (título del plan + nombre del hijo); no bloquea
       try {
         fetch('/api/notify', {
@@ -97,9 +113,10 @@ export default function PublicForm() {
           body: JSON.stringify({
             formId: form.id,
             formTitle: form.title,
-            childName: childName.trim(),
-            childSurname: childSurname.trim(),
-            attends,
+            childName: isFamilias ? '' : childName.trim(),
+            childSurname: isFamilias ? '' : childSurname.trim(),
+            familyName: isFamilias ? familyName.trim() : '',
+            attends: isFamilias ? '' : attends,
           }),
         }).catch(() => {});
       } catch {}
@@ -124,12 +141,14 @@ export default function PublicForm() {
   );
 
   if (sent) {
+    const sentIsFamilias = form ? formKind(form) === 'familias' : false;
     return (
       <main style={{ maxWidth: 620, margin: '40px auto', padding: 20 }}>
         <div className="card" style={{ padding: 32, textAlign: 'center' }}>
           <div style={{ fontSize: 52 }}>✅</div>
-          <h1 style={{ margin: '10px 0 6px' }}>¡Gracias, {childName}!</h1>
-          <p style={{ color: '#64748b' }}>{attends === 'si' ? 'Queda apuntado al plan. ¡Nos vemos allí! 🎉' : 'Queda anotado que no se apunta a este plan.'}</p>
+          <h1 style={{ margin: '10px 0 6px' }}>¡Gracias{sentIsFamilias ? `, ${familyName}` : childName ? `, ${childName}` : ''}!</h1>
+          {!sentIsFamilias && <p style={{ color: '#64748b' }}>{attends === 'si' ? 'Queda apuntado al plan. ¡Nos vemos allí! 🎉' : 'Queda anotado que no se apunta a este plan.'}</p>}
+          {sentIsFamilias && <p style={{ color: '#64748b' }}>Hemos registrado tu respuesta.</p>}
           <p style={{ fontSize: 14, color: '#94a3b8' }}>Tu nombre queda guardado en este móvil para que no tengas que escribirlo en los próximos formularios.</p>
           <button className="btn btn-ghost" onClick={() => { setSent(false); setObservation(''); setAnswers({}); setAttends(''); setAuthorized(false); }}>Rellenar otra respuesta</button>
         </div>
@@ -149,6 +168,8 @@ export default function PublicForm() {
     );
   }
 
+  const isFamilias = formKind(form) === 'familias';
+
   return (
     <main style={{ maxWidth: 620, margin: '0 auto', padding: 16, paddingBottom: 40 }}>
       {form.headerImage && <img src={form.headerImage} alt="" style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 16 }} />}
@@ -167,30 +188,39 @@ export default function PublicForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="card" style={{ padding: 22, marginTop: 14, display: 'grid', gap: 16 }}>
-        <div>
-          <label className="label">Nombre del hijo *</label>
-          <input className="field" value={childName} onChange={e => setChildName(e.target.value)} placeholder="Ej. Luis" autoComplete="given-name" />
-        </div>
-        <div>
-          <label className="label">Apellidos del hijo *</label>
-          <input className="field" value={childSurname} onChange={e => setChildSurname(e.target.value)} placeholder="Ej. García Pérez" autoComplete="family-name" />
-          {(childName || childSurname) && <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Se recordará en este móvil para próximos formularios. Puedes cambiarlo si lo necesitas.</p>}
-        </div>
-        <div>
-          <label className="label">Curso *</label>
-          <select className="field" value={curso} onChange={e => setCurso(e.target.value)}>
-            <option value="">Elige el curso…</option>
-            {CURSOS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label className="label">¿Se apunta al plan? *</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <button type="button" onClick={() => setAttends('si')} style={{ border: attends === 'si' ? '2px solid #0d9488' : '1px solid #d1d5db', background: attends === 'si' ? '#ccfbf1' : '#fff', borderRadius: 12, padding: 14, fontSize: 17, fontWeight: 700, cursor: 'pointer' }}>✅ Sí, se apunta</button>
-            <button type="button" onClick={() => setAttends('no')} style={{ border: attends === 'no' ? '2px solid #b91c1c' : '1px solid #d1d5db', background: attends === 'no' ? '#fee2e2' : '#fff', borderRadius: 12, padding: 14, fontSize: 17, fontWeight: 700, cursor: 'pointer' }}>❌ No se apunta</button>
+        {isFamilias ? (
+          <div>
+            <label className="label">Nombre de la familia *</label>
+            <input className="field" value={familyName} onChange={e => setFamilyName(e.target.value)} placeholder="Ej. Familia García Pérez" autoComplete="family-name" />
+            {familyName && <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Se recordará en este móvil para próximos formularios. Puedes cambiarlo si lo necesitas.</p>}
           </div>
-        </div>
+        ) : (
+          <>
+            <div>
+              <label className="label">Nombre del hijo *</label>
+              <input className="field" value={childName} onChange={e => setChildName(e.target.value)} placeholder="Ej. Luis" autoComplete="given-name" />
+            </div>
+            <div>
+              <label className="label">Apellidos del hijo *</label>
+              <input className="field" value={childSurname} onChange={e => setChildSurname(e.target.value)} placeholder="Ej. García Pérez" autoComplete="family-name" />
+              {(childName || childSurname) && <p style={{ fontSize: 13, color: '#64748b', margin: '6px 0 0' }}>Se recordará en este móvil para próximos formularios. Puedes cambiarlo si lo necesitas.</p>}
+            </div>
+            <div>
+              <label className="label">Curso *</label>
+              <select className="field" value={curso} onChange={e => setCurso(e.target.value)}>
+                <option value="">Elige el curso…</option>
+                {CURSOS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label">¿Se apunta al plan? *</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <button type="button" onClick={() => setAttends('si')} style={{ border: attends === 'si' ? '2px solid #0d9488' : '1px solid #d1d5db', background: attends === 'si' ? '#ccfbf1' : '#fff', borderRadius: 12, padding: 14, fontSize: 17, fontWeight: 700, cursor: 'pointer' }}>✅ Sí, se apunta</button>
+                <button type="button" onClick={() => setAttends('no')} style={{ border: attends === 'no' ? '2px solid #b91c1c' : '1px solid #d1d5db', background: attends === 'no' ? '#fee2e2' : '#fff', borderRadius: 12, padding: 14, fontSize: 17, fontWeight: 700, cursor: 'pointer' }}>❌ No se apunta</button>
+              </div>
+            </div>
+          </>
+        )}
 
         {form.questions.map(q => (
           <div key={q.id}>
@@ -237,10 +267,12 @@ export default function PublicForm() {
           </div>
         ))}
 
-        <div>
-          <label className="label">Observaciones</label>
-          <textarea className="field" rows={3} value={observation} onChange={e => setObservation(e.target.value)} placeholder="Alergias, algo que debamos saber, hora de recogida…" />
-        </div>
+        {!isFamilias && (
+          <div>
+            <label className="label">Observaciones</label>
+            <textarea className="field" rows={3} value={observation} onChange={e => setObservation(e.target.value)} placeholder="Alergias, algo que debamos saber, hora de recogida…" />
+          </div>
+        )}
 
         {form.authText && (form.authType || 'simple') === 'full' ? (
           <div style={{ display: 'grid', gap: 12, border: '1px solid #e2e8f0', borderRadius: 12, padding: 16, background: '#fff' }}>
@@ -269,7 +301,7 @@ export default function PublicForm() {
 
         {error && <div style={{ background: '#fee2e2', color: '#991b1b', padding: 12, borderRadius: 12, fontSize: 14 }}>{error}</div>}
         <button className="btn btn-primary" type="submit" disabled={sending} style={{ fontSize: 17, padding: '14px 18px' }}>{sending ? 'Enviando…' : 'Enviar respuesta'}</button>
-        <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', margin: 0 }}>Solo se guarda nombre, apellidos, si se apunta, observaciones y tus respuestas. Glera.</p>
+        <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', margin: 0 }}>Solo se guarda lo que rellenes en este formulario. Glera.</p>
       </form>
     </main>
   );

@@ -21,6 +21,7 @@ function emptyForm(): GleraForm {
   return {
     id: uid(),
     title: '',
+    kind: 'hijos',
     headerImage: '',
     descriptionHtml: '',
     questions: [],
@@ -189,6 +190,22 @@ export default function AdminPage() {
       <main style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
         <button className="btn btn-ghost" onClick={() => setEditing(null)}>← Volver</button>
         <h1 style={{ fontSize: 26 }}>{editing.createdAt && forms.some(f => f.id === editing.id) ? 'Editar formulario' : 'Nuevo formulario'}</h1>
+        <div style={{ display: 'flex', gap: 8 }} role="tablist" aria-label="Tipo de formulario">
+          {(['hijos', 'familias'] as const).map(k => {
+            const active = (editing.kind || 'hijos') === k;
+            return (
+              <button key={k} type="button" role="tab" aria-selected={active} onClick={() => setEditing({ ...editing, kind: k })}
+                style={{ flex: 1, border: active ? '2px solid #0d9488' : '1px solid #d1d5db', background: active ? '#ccfbf1' : '#fff', borderRadius: 12, padding: '12px 10px', fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>
+                {k === 'hijos' ? '👦 Para hijos' : '👨‍👩‍👧 Para familias'}
+              </button>
+            );
+          })}
+        </div>
+        <p style={{ fontSize: 13, color: '#64748b', margin: 0 }}>
+          {(editing.kind || 'hijos') === 'hijos'
+            ? 'Campos fijos: nombre, apellidos, curso, ¿se apunta?, observaciones (+ autorización si la activas).'
+            : 'Campos fijos: solo nombre de la familia. Después añade las preguntas que quieras.'}
+        </p>
         <form onSubmit={handleSave} style={{ display: 'grid', gap: 18 }}>
           <div className="card" style={{ padding: 20, display: 'grid', gap: 14 }}>
             <div>
@@ -347,20 +364,23 @@ export default function AdminPage() {
                 <div style={{ padding: '14px 18px 12px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' }}>
                     <h2 style={{ margin: 0, fontSize: 18 }}>{f.title}</h2>
-                    <span className={`badge ${f.status === 'open' ? 'badge-open' : 'badge-closed'}`}>{f.status === 'open' ? 'Abierto' : 'Cerrado'}</span>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <span className="badge" style={{ background: '#eef2ff', color: '#4338ca' }}>{(f.kind || 'hijos') === 'hijos' ? '👦 Hijos' : '👨‍👩‍👧 Familias'}</span>
+                      <span className={`badge ${f.status === 'open' ? 'badge-open' : 'badge-closed'}`}>{f.status === 'open' ? 'Abierto' : 'Cerrado'}</span>
+                    </div>
                   </div>
                   {(f.planDate || f.planPlace) && (
                     <p style={{ color: '#64748b', fontSize: 13, margin: '4px 0 0' }}>{f.planDate}{f.planDate && f.planPlace ? ' · ' : ''}{f.planPlace}</p>
                   )}
                   <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                     <span className="stat"><strong>{c.total}</strong> respuestas</span>
-                    <span className="stat stat-ok"><strong>{c.si}</strong> se apuntan</span>
-                    <span className="stat stat-ko"><strong>{c.no}</strong> no se apuntan</span>
+                    {(f.kind || 'hijos') === 'hijos' && <span className="stat stat-ok"><strong>{c.si}</strong> se apuntan</span>}
+                    {(f.kind || 'hijos') === 'hijos' && <span className="stat stat-ko"><strong>{c.no}</strong> no se apuntan</span>}
                   </div>
                 </div>
                 <div className="actions-bar">
                   <a href={`/admin/${f.id}`} className="btn btn-primary btn-xs" style={{ textDecoration: 'none' }}>Ver respuestas</a>
-                  <a href={`/f/${f.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-xs" style={{ textDecoration: 'none' }} title="Abrir la vista que ven las familias">Vista familia ↗</a>
+                  <a href={`/f/${f.id}`} target="_blank" rel="noreferrer" className="btn btn-ghost btn-xs" style={{ textDecoration: 'none' }} title="Abrir la vista que ven las familias">{(f.kind || 'hijos') === 'hijos' ? 'Vista familia ↗' : 'Vista familias ↗'}</a>
                   <button className="btn btn-ghost btn-xs" onClick={() => copyLink(f.id)} title="Copiar el enlace público del formulario">{copied === f.id ? '¡Copiado!' : 'Copiar enlace'}</button>
                   <span className="actions-sep" />
                   <button className="btn btn-ghost btn-xs" onClick={() => setEditing(f)}>Editar</button>

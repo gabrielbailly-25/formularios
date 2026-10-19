@@ -120,6 +120,22 @@ export function getSavedChild(): { name: string; surname: string; curso: string;
     return { name: '', surname: '', curso: '', authName: '', authDni: '' };
   }
 }
+// Memoria del nombre de la familia en el móvil (formularios de familias)
+const LS_FAMILY = 'glera_familia_v1';
+export function getSavedFamily(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    const raw = localStorage.getItem(LS_FAMILY);
+    if (!raw) return '';
+    return JSON.parse(raw).name || '';
+  } catch {
+    return '';
+  }
+}
+export function saveFamily(name: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(LS_FAMILY, JSON.stringify({ name: name.trim() }));
+}
 export function saveChild(name: string, surname: string, curso: string, authName = '', authDni = '') {
   if (typeof window === 'undefined') return;
   localStorage.setItem(LS_CHILD, JSON.stringify({ name: name.trim(), surname: surname.trim(), curso: (curso || '').trim(), authName: authName.trim(), authDni: authDni.trim() }));

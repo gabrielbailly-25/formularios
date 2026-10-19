@@ -8,8 +8,16 @@ App para crear formularios que se envían por WhatsApp a las familias de Glera, 
 - **Familias**: abren el enlace desde el grupo de WhatsApp de su hijo, rellenan nombre y apellidos del hijo, si se apunta, observaciones y las preguntas. El nombre se guarda en su móvil para que no tengan que escribirlo cada vez.
 - **Admin ve**: cuántos han respondido, cuántos se han apuntado / no, listado con nombres, respuestas y observaciones, exportar a CSV, duplicar, cerrar y borrar.
 
-## Campos fijos en todos los formularios
+## Tipos de formulario
 
+Al crear o editar un formulario se elige con dos pestañas:
+
+- **👦 Para hijos**: campos fijos — nombre, apellidos, curso (desplegable 4º EP → 2º Bach), ¿se apunta?, observaciones — más las preguntas que añadas y la autorización si la activas.
+- **👨‍👩‍👧 Para familias**: campo fijo único — nombre de la familia — más las preguntas que añadas y la autorización si la activas. Sin curso, sin "¿se apunta?" y sin observaciones.
+
+## Campos fijos según el tipo
+
+**Para hijos:**
 1. Nombre del hijo
 2. Apellidos del hijo
 3. Curso (desplegable: 4º EP → 2º Bach)
@@ -18,6 +26,10 @@ App para crear formularios que se envían por WhatsApp a las familias de Glera, 
 6. Autorización (solo si el admin escribe un texto de autorización en el formulario: la familia debe aceptarla para enviar). Dos tipos:
    - **Sencilla**: solo casilla de aceptación. Para planes habituales.
    - **Completa**: pide nombre y DNI del padre, madre o tutor que autoriza, más cláusula de protección de datos. Para autorizaciones más serias (excursiones, viajes). En el panel se ve quién autoriza y su DNI.
+
+**Para familias:**
+1. Nombre de la familia (único campo fijo; también se recuerda en el móvil)
+2. Autorización (igual que en hijos: opcional, sencilla o completa)
 
 A eso el admin añade las preguntas que quiera: texto corto, texto largo, número, Sí/No, una opción (radio), varias opciones (checkbox) o desplegable.
 
