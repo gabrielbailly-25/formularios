@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { GleraForm, GleraResponse, formKind } from '../../../lib/types';
+import { GleraForm, GleraResponse, formKind, CURSOS } from '../../../lib/types';
 import { getForm, listResponses, deleteResponse, deleteForm } from '../../../lib/store';
 import { adminPassword } from '../../../lib/firebase';
 import { GLERA_LOGO } from '../../../lib/logo';
@@ -58,6 +58,23 @@ export default function AdminDetail() {
 
   const si = responses.filter(r => r.attends === 'si').length;
   const no = responses.filter(r => r.attends === 'no').length;
+
+  // Conteo por curso (solo formularios de hijos), ordenado de 4º EP a 2º Bach
+  const perCurso = useMemo(() => {
+    const map = new Map<string, { total: number; si: number }>();
+    for (const r of responses) {
+      const c = r.curso || 'Sin curso';
+      const e = map.get(c) || { total: 0, si: 0 };
+      e.total++;
+      if (r.attends === 'si') e.si++;
+      map.set(c, e);
+    }
+    return [...map.entries()].sort((a, b) => {
+      const ia = CURSOS.indexOf(a[0]);
+      const ib = CURSOS.indexOf(b[0]);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+  }, [responses]);
 
   function exportCSV() {
     if (!form) return;
@@ -136,6 +153,21 @@ export default function AdminDetail() {
         {!isFamilias && <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: '#b91c1c' }}>{no}</div><div style={{ color: '#64748b' }}>No se apuntan</div></div>}
         {!isFamilias && <div className="card" style={{ padding: 16 }}><div style={{ fontSize: 28, fontWeight: 800 }}>{responses.length ? Math.round((si / responses.length) * 100) : 0}%</div><div style={{ color: '#64748b' }}>Se apuntan</div></div>}
       </div>
+
+      {!isFamilias && perCurso.length > 0 && (
+        <div className="card" style={{ padding: 16, marginBottom: 18 }}>
+          <h3 style={{ margin: '0 0 10px', fontSize: 15 }}>Por curso</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8 }}>
+            {perCurso.map(([curso, d]) => (
+              <div key={curso} style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 12px' }}>
+                <div style={{ fontWeight: 800, fontSize: 13 }}>{curso}</div>
+                <div style={{ fontSize: 22, fontWeight: 800 }}>{d.total}</div>
+                <div style={{ fontSize: 12, color: '#0d9488' }}>✅ {d.si} se apuntan</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
         <button className="btn btn-ghost" onClick={() => setFilter('all')} style={{ background: filter === 'all' ? '#0d9488' : undefined, color: filter === 'all' ? '#fff' : undefined }}>Todos ({responses.length})</button>
