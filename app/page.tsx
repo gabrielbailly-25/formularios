@@ -50,17 +50,16 @@ export default function HomePage() {
           {forms.map(f => (
             <a key={f.id} href={`/f/${f.id}`} className="plan-btn" style={{ textDecoration: 'none', color: 'inherit' }}>
               {f.headerImage && <img src={f.headerImage} alt="" style={{ width: '100%', maxHeight: 130, objectFit: 'cover', display: 'block' }} />}
-              <div style={{ padding: '16px 18px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px 12px' }}>
-                <div style={{ flex: '1 0 auto', maxWidth: '100%', minWidth: 0 }}>
-                  <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.title}</div>
-                  {(f.kind || 'hijos') === 'familias' && (
-                    <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>👨‍👩‍👧 Formulario para familias</div>
-                  )}
-                </div>
-                {f.planDate && (
-                  <span style={{ background: '#f0fdfa', border: '1px solid #99f6e4', color: '#0f766e', borderRadius: 999, padding: '6px 12px', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 'auto' }}>📅 {f.planDate}</span>
+              <div style={{ padding: '16px 18px', textAlign: 'center' }}>
+                <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.title}</div>
+                {(f.kind || 'hijos') === 'familias' && (
+                  <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>👨‍👩‍👧 Formulario para familias</div>
                 )}
-                <div style={{ fontSize: 24, color: '#0d9488', flexShrink: 0 }}>→</div>
+                {f.planDate && (
+                  <div style={{ marginTop: 8 }}>
+                    <span style={{ background: '#f0fdfa', border: '1px solid #99f6e4', color: '#0f766e', borderRadius: 999, padding: '6px 12px', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', display: 'inline-block' }}>📅 {f.planDate}</span>
+                  </div>
+                )}
               </div>
             </a>
           ))}
