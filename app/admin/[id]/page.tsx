@@ -25,7 +25,7 @@ export default function AdminDetail() {
   const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
-    if (sessionStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
+    if (localStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
   }, []);
 
   useEffect(() => {
@@ -121,8 +121,8 @@ export default function AdminDetail() {
         <div className="card" style={{ padding: 28, textAlign: 'center' }}>
           <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 56, width: 'auto', marginBottom: 8 }} />
           <h1>Admin · Glera</h1>
-          <form onSubmit={e => { e.preventDefault(); if (pass === adminPassword()) { sessionStorage.setItem('glera_admin_auth', '1'); setAuthed(true); } else alert('Contraseña incorrecta'); }} style={{ display: 'grid', gap: 12 }}>
-            <input className="field" type="password" placeholder="Contraseña del admin" value={pass} onChange={e => setPass(e.target.value)} autoFocus />
+          <form onSubmit={e => { e.preventDefault(); if (pass === adminPassword()) { localStorage.setItem('glera_admin_auth', '1'); setAuthed(true); } else alert('Contraseña incorrecta'); }} style={{ display: 'grid', gap: 12 }}>
+            <input className="field" type="password" name="admin-password" autoComplete="current-password" placeholder="Contraseña del admin" value={pass} onChange={e => setPass(e.target.value)} autoFocus />
             <button className="btn btn-primary">Entrar</button>
           </form>
         </div>

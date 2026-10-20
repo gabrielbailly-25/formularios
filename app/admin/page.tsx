@@ -47,7 +47,7 @@ export default function AdminPage() {
   const [pushMsg, setPushMsg] = useState('');
 
   useEffect(() => {
-    if (sessionStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
+    if (localStorage.getItem('glera_admin_auth') === '1') setAuthed(true);
   }, []);
 
   // Al entrar el admin: limpia la insignia y prepara notificaciones
@@ -89,7 +89,7 @@ export default function AdminPage() {
   function login(e: React.FormEvent) {
     e.preventDefault();
     if (pass === adminPassword()) {
-      sessionStorage.setItem('glera_admin_auth', '1');
+      localStorage.setItem('glera_admin_auth', '1');
       setAuthed(true);
     } else {
       setPassError('Contraseña incorrecta. Prueba de nuevo.');
@@ -175,7 +175,7 @@ export default function AdminPage() {
           <h1 style={{ margin: '8px 0 4px' }}>Glera · Admin</h1>
           <p style={{ color: '#64748b', marginTop: 0 }}>Formularios de planes de fin de semana.<br />Solo el administrador puede entrar aquí.</p>
           <form onSubmit={login} style={{ display: 'grid', gap: 12, marginTop: 18 }}>
-            <input className="field" type="password" placeholder="Contraseña del admin" value={pass} onChange={e => setPass(e.target.value)} autoFocus />
+            <input className="field" type="password" name="admin-password" autoComplete="current-password" placeholder="Contraseña del admin" value={pass} onChange={e => setPass(e.target.value)} autoFocus />
             {passError && <div style={{ color: '#b91c1c', fontSize: 14 }}>{passError}</div>}
             <button className="btn btn-primary" type="submit">Entrar</button>
           </form>
@@ -334,7 +334,7 @@ export default function AdminPage() {
           )}
           {pushState === 'working' && <span style={{ alignSelf: 'center', color: '#64748b', fontSize: 14 }}>Activando…</span>}
           <button className="btn btn-primary" onClick={() => setEditing(emptyForm())}>+ Nuevo formulario</button>
-          <button className="btn btn-ghost" onClick={() => { sessionStorage.removeItem('glera_admin_auth'); setAuthed(false); }}>Salir</button>
+          <button className="btn btn-ghost" onClick={() => { localStorage.removeItem('glera_admin_auth'); setAuthed(false); }}>Salir</button>
         </div>
       </header>
       {pushMsg && <p style={{ fontSize: 13, color: pushState === 'on' ? '#0f766e' : '#b91c1c', margin: '8px 0 0' }}>{pushMsg}</p>}
