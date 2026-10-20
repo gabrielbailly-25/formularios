@@ -27,8 +27,10 @@ export default function HomePage() {
       <header style={{ textAlign: 'center', marginBottom: 26 }}>
         <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 110, width: 'auto', maxWidth: '90%' }} />
         <h1 style={{ margin: '14px 0 8px', fontSize: 34, lineHeight: 1.15 }}>Formularios Glera</h1>
-        <p style={{ color: '#64748b', fontSize: 17, lineHeight: 1.5, margin: 0 }}>
+        <p style={{ color: '#64748b', fontSize: 17, lineHeight: 1.5, margin: '0 0 6px' }}>
           ¡Hola! 👋 Aquí puedes apuntar a tu hijo a los planes de fin de semana de la Asociación Juvenil Glera.
+        </p>
+        <p style={{ color: '#64748b', fontSize: 17, lineHeight: 1.5, margin: 0 }}>
           Elige el plan y rellena el formulario: tardas un minuto.
         </p>
       </header>
@@ -46,23 +48,19 @@ export default function HomePage() {
       ) : (
         <div style={{ display: 'grid', gap: 14 }}>
           {forms.map(f => (
-            <a key={f.id} href={`/f/${f.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-              <div className="card" style={{ overflow: 'hidden' }}>
-                {f.headerImage && <img src={f.headerImage} alt="" style={{ width: '100%', maxHeight: 130, objectFit: 'cover', display: 'block' }} />}
-                <div style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25 }}>{f.title}</div>
-                    {(f.planDate || f.planPlace) && (
-                      <div style={{ color: '#64748b', fontSize: 15, marginTop: 5 }}>
-                        📅 {f.planDate}{f.planDate && f.planPlace ? ' · ' : ''}{f.planPlace ? `📍 ${f.planPlace}` : ''}
-                      </div>
-                    )}
-                    {(f.kind || 'hijos') === 'familias' && (
-                      <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>👨‍👩‍👧 Formulario para familias</div>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 26, color: '#0d9488', flexShrink: 0 }}>→</div>
+            <a key={f.id} href={`/f/${f.id}`} className="plan-btn" style={{ textDecoration: 'none', color: 'inherit' }}>
+              {f.headerImage && <img src={f.headerImage} alt="" style={{ width: '100%', maxHeight: 130, objectFit: 'cover', display: 'block' }} />}
+              <div style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.25 }}>{f.title}</div>
+                  {(f.kind || 'hijos') === 'familias' && (
+                    <div style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>👨‍👩‍👧 Formulario para familias</div>
+                  )}
                 </div>
+                {f.planDate && (
+                  <span style={{ background: '#f0fdfa', border: '1px solid #99f6e4', color: '#0f766e', borderRadius: 999, padding: '6px 12px', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>📅 {f.planDate}</span>
+                )}
+                <div style={{ fontSize: 24, color: '#0d9488', flexShrink: 0 }}>→</div>
               </div>
             </a>
           ))}
