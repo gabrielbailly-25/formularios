@@ -49,10 +49,15 @@ export async function getForm(id: string): Promise<GleraForm | null> {
   return all.find(f => f.id === id) || null;
 }
 
+// Firestore rechaza documentos con valores undefined: hay que quitarlos antes de guardar
+function clean<T extends Record<string, any>>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
+}
+
 export async function saveForm(form: GleraForm): Promise<void> {
   if (useFirestore()) {
     const db = requireDb();
-    await setDoc(doc(db, 'glera_forms', form.id), form);
+    await setDoc(doc(db, 'glera_forms', form.id), clean(form));
     return;
   }
   const all = readLS<GleraForm>(LS_FORMS);
@@ -90,7 +95,7 @@ export async function listResponses(formId: string): Promise<GleraResponse[]> {
 export async function saveResponse(resp: GleraResponse): Promise<void> {
   if (useFirestore()) {
     const db = requireDb();
-    await setDoc(doc(db, 'glera_responses', resp.id), resp);
+    await setDoc(doc(db, 'glera_responses', resp.id), clean(resp));
     return;
   }
   const all = readLS<GleraResponse>(LS_RESP);

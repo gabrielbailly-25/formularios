@@ -121,9 +121,9 @@ export default function PublicForm() {
         }).catch(() => {});
       } catch {}
       setSent(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError('No se pudo enviar. Comprueba tu conexión e inténtalo de nuevo.');
+      setError('No se pudo enviar. Comprueba tu conexión e inténtalo de nuevo.' + (err?.message ? ` (Detalle: ${err.message})` : ''));
     } finally {
       setSending(false);
     }
