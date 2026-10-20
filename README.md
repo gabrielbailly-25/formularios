@@ -4,7 +4,8 @@ App para crear formularios que se envían por WhatsApp a las familias de Glera, 
 
 ## Cómo funciona
 
-- **Admin** (solo con contraseña): crea formularios con título, imagen de cabecera, descripción del plan con estilos (negrita, listas, colores, tamaños) y preguntas personalizadas. Cada formulario tiene un enlace público y un botón para compartir por WhatsApp.
+- **Portada (`/`)**: página pública para familias con el logo grande, «Formularios Glera» y un botón por cada formulario abierto (título + fecha del plan) para entrar a rellenarlo.
+- **Admin** (solo con contraseña, en `/admin`): crea formularios con título, imagen de cabecera, descripción del plan con estilos (negrita, listas, colores, tamaños) y preguntas personalizadas. Cada formulario tiene también un enlace directo.
 - **Familias**: abren el enlace desde el grupo de WhatsApp de su hijo, rellenan nombre y apellidos del hijo, si se apunta, observaciones y las preguntas. El nombre se guarda en su móvil para que no tengan que escribirlo cada vez.
 - **Admin ve**: cuántos han respondido, cuántos se han apuntado / no, listado con nombres, respuestas y observaciones, exportar a CSV, duplicar, cerrar y borrar.
 

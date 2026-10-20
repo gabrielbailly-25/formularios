@@ -131,13 +131,13 @@ export default function AdminDetail() {
   }
 
   if (loading) return <main style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}>Cargando…</main>;
-  if (!form) return <main style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}><p>Formulario no encontrado.</p><a href="/">← Volver</a></main>;
+  if (!form) return <main style={{ maxWidth: 900, margin: '0 auto', padding: 20 }}><p>Formulario no encontrado.</p><a href="/admin">← Volver</a></main>;
 
   const isFamilias = formKind(form) === 'familias';
 
   return (
     <main style={{ maxWidth: 1000, margin: '0 auto', padding: 20 }}>
-      <a href="/" style={{ textDecoration: 'none' }}>← Todos los formularios</a>
+      <a href="/admin" style={{ textDecoration: 'none' }}>← Todos los formularios</a>
       {loadError && (
         <div className="card" style={{ padding: 16, marginTop: 14, background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
           ⚠️ {loadError}
