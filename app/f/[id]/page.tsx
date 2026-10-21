@@ -174,11 +174,11 @@ export default function PublicForm() {
     <main style={{ maxWidth: 620, margin: '0 auto', padding: 16, paddingBottom: 40 }}>
       {form.headerImage && <img src={form.headerImage} alt="" style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 16 }} />}
       <div className="card" style={{ padding: 22, marginTop: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left' }}>
-          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 34, width: 'auto', flexShrink: 0 }} />
-          <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.2 }}>{form.title}</h1>
+        <div style={{ textAlign: 'center' }}>
+          <img src={GLERA_LOGO} alt="Asociación Juvenil Glera" style={{ height: 34, width: 'auto' }} />
+          <h1 style={{ margin: '8px 0 0', fontSize: 22, lineHeight: 1.2 }}>{form.title}</h1>
+          {(form.planDate || form.planPlace) && <p style={{ color: '#64748b', margin: '8px 0 0' }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>}
         </div>
-        {(form.planDate || form.planPlace) && <p style={{ color: '#64748b', margin: '10px 0 0', textAlign: 'left' }}>{form.planDate}{form.planDate && form.planPlace ? ' · ' : ''}{form.planPlace}</p>}
         {form.descriptionHtml && (
           <>
             <style>{`.plan-desc, .plan-desc * { text-align: left !important; } .plan-desc ul, .plan-desc ol { padding-left: 22px; margin: 8px 0; } .plan-desc li { margin: 4px 0; } .plan-desc p { margin: 8px 0; }`}</style>
