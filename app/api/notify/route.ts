@@ -36,11 +36,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, sent: 0, note: 'Sin dispositivos suscritos' });
     }
 
-    // Insignia = total de respuestas recibidas
+    // Insignia = respuestas de formularios ABIERTOS (los cerrados ya no cuentan)
     let badge = '';
     try {
-      const countSnap = await db.collection('glera_responses').count().get();
-      badge = String(countSnap.data().count || 0);
+      const openFormsSnap = await db.collection('glera_forms').where('status', '==', 'open').get();
+      const openIds = openFormsSnap.docs.map((d) => d.id);
+      let total = 0;
+      for (const fid of openIds) {
+        const countSnap = await db.collection('glera_responses').where('formId', '==', fid).count().get();
+        total += countSnap.data().count || 0;
+      }
+      badge = String(total);
     } catch {}
 
     const attendsTxt = attends === 'si' ? ' · Se apunta ✅' : attends === 'no' ? ' · No se apunta' : '';
