@@ -78,6 +78,8 @@ export function listenForegroundPush(onNotify: (title: string, body: string) => 
       const n = parseInt(data.badge || '0', 10);
       if (!isNaN(n) && n > 0 && 'setAppBadge' in navigator) {
         (navigator as any).setAppBadge(n).catch(() => {});
+      } else if (!isNaN(n) && n === 0 && 'clearAppBadge' in navigator) {
+        (navigator as any).clearAppBadge().catch(() => {});
       }
     } catch {}
     try {
