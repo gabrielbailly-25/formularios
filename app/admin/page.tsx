@@ -62,6 +62,13 @@ export default function AdminPage() {
     return stop;
   }, [authed]);
 
+  // Abiertos primero; dentro de cada grupo, los más recientes arriba
+  const sortedForms = [...forms].sort((a, b) => {
+    const sa = a.status === 'open' ? 0 : 1;
+    const sb = b.status === 'open' ? 0 : 1;
+    return sa - sb || b.createdAt - a.createdAt;
+  });
+
   async function refresh() {
     setLoading(true);
     setLoadError('');
@@ -356,7 +363,7 @@ export default function AdminPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gap: 16 }}>
-          {forms.map(f => {
+          {sortedForms.map(f => {
             const c = counts[f.id] || { total: 0, si: 0, no: 0 };
             return (
               <article key={f.id} className="card" style={{ overflow: 'hidden' }}>
